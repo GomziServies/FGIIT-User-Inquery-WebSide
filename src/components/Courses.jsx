@@ -1,7 +1,7 @@
 import React from 'react';
 import { COURSES, COURSE_ORDER } from '../data/fgiitData';
 
-export default function Courses({ onOpenCourse }) {
+export default function Courses({ onOpenCourse, onOpenBuy }) {
   return (
     <section id="courses" className="wrap sec">
       <div className="head">

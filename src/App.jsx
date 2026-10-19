@@ -23,6 +23,7 @@ export default function App() {
 
   const handleOpenDemo = () => setModalState({ type: 'demo', data: null });
   const handleOpenCourse = (courseId) => setModalState({ type: 'course', data: courseId });
+  const handleOpenBuy = (courseId) => setModalState({ type: 'buy', data: courseId });
   const handleOpenReport = (reportData) => setModalState({ type: 'report', data: reportData });
   const handleApplyExam = (courseData) => setModalState({ type: 'apply', data: courseData });
   const handleOpenEmi = () => setModalState({ type: 'emi', data: null });
@@ -39,7 +40,7 @@ export default function App() {
         <LearnYourWay />
         <FreeDemoBanner onOpenDemo={handleOpenDemo} />
         <PracticalClasses />
-        <Courses onOpenCourse={handleOpenCourse} />
+        <Courses onOpenCourse={handleOpenCourse} onOpenBuy={handleOpenBuy} />
         <Curriculum />
         <Journey />
         <CertificateOnly onApplyExam={handleApplyExam} onOpenEmi={handleOpenEmi} />

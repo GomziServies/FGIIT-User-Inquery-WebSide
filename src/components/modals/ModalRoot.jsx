@@ -60,6 +60,7 @@ export default function ModalRoot({ modalState, onClose }) {
 
         {type === 'report' && <ReportModalContent report={data} onClose={onClose} />}
         {type === 'course' && <CourseModalContent courseId={data} onClose={onClose} />}
+        {type === 'buy' && <CourseBuyFormContent courseId={data} onClose={onClose} />}
         {type === 'demo' && <DemoModalContent onClose={onClose} />}
         {type === 'apply' && <ApplyExamModalContent initData={data} onClose={onClose} />}
         {type === 'emi' && <EmiModalContent onClose={onClose} />}
@@ -264,8 +265,384 @@ function ReportModalContent({ report, onClose }) {
   );
 }
 
+/* ================= COURSE BUY FORM MODAL ================= */
+function CourseBuyFormContent({ courseId, onClose, onBack }) {
+  const isNt = courseId === 'nt';
+  const c = isNt ? null : COURSES[courseId];
+  const price = isNt ? '₹4,777' : (c?.price || '₹2,999');
+  const courseName = isNt ? 'Nutri-Trainer Combo' : (c?.name || 'Course');
+
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [err, setErr] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const handlePhoneChange = (e) => {
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
+    setPhone(raw);
+    if (err) setErr('');
+  };
+
+  const paymentLink = CONFIG.PAYMENT_LINKS?.[courseId] || '';
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (name.trim().length < 2) {
+      setErr('Please enter your full name.');
+      return;
+    }
+    if (!okPhone(phone)) {
+      setErr('Please enter a valid 10-digit contact number.');
+      return;
+    }
+    if (!email.trim() || !okEmail(email.trim())) {
+      setErr('Please enter a valid email address.');
+      return;
+    }
+
+    setErr('');
+    setIsSubmitting(true);
+
+    try {
+      // 1. Submit contact inquiry to fg-api backend with 24h SLA and notification metadata
+      const inquiryRes = await submitContactInquiry({
+        name: name.trim(),
+        email: email.trim(),
+        mobile: phone,
+        subject: courseName,
+        message: `Course Enrollment Request Submitted Successfully:\n- Course: ${courseName}\n- Fee: ${price}\n- Client Name: ${name.trim()}\n- Contact No (WhatsApp): +91 ${phone}\n- Email: ${email.trim()}\n- Client Notification: "Your request is submitted successfully. Within 24 hours our team will contact you."\n- Channels: WhatsApp (+91 ${phone}) & Email (${email.trim()})\n- SLA: Response guaranteed within 24 hours\n- Submitted At: ${new Date().toLocaleString('en-IN')}`,
+        source: window.location.href,
+        details: {
+          courseId,
+          courseName,
+          price,
+          studentName: name.trim(),
+          contactNumber: phone,
+          email: email.trim(),
+          leadType: 'course_purchase_buy_now',
+          clientNotice: 'Your request is submitted successfully. Within 24 hours our team will contact you.',
+          contactSla: '24 hours',
+          notifyChannels: ['whatsapp', 'email'],
+          clientPhone: phone,
+          clientEmail: email.trim(),
+          submittedAt: new Date().toISOString(),
+        },
+      });
+
+      console.info('[FGIIT] Purchase inquiry submitted:', inquiryRes);
+
+      // 2. Telemetry tracking
+      await sendTelemetry('course_purchase_lead', {
+        courseId,
+        courseName,
+        price,
+        name: name.trim(),
+        phone,
+        email: email.trim(),
+      });
+
+      setIsSubmitting(false);
+      setDone(true);
+    } catch (submitErr) {
+      console.error('[FGIIT] Purchase inquiry failed:', submitErr);
+      setIsSubmitting(false);
+      setDone(true);
+    }
+  };
+
+  return (
+    <div>
+      <div
+        style={{
+          background: 'var(--tint)',
+          padding: '24px 28px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          borderTopLeftRadius: '24px',
+          borderTopRightRadius: '24px',
+        }}
+      >
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: 'var(--deep)',
+              fontWeight: 700,
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              alignSelf: 'flex-start',
+              marginBottom: '2px',
+            }}
+          >
+            ← Back to syllabus
+          </button>
+        )}
+        <span className="eyebrow">
+          COURSE ENROLLMENT · {price}
+        </span>
+        <h2 style={{ margin: 0, fontSize: 'clamp(22px, 2.8vw, 28px)', lineHeight: 1.2, paddingRight: '48px' }}>
+          {courseName}
+        </h2>
+        <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
+          Enter your contact details. Our team will contact you within 24 hours on WhatsApp &amp; Email.
+        </span>
+      </div>
+
+      <div className="pad">
+        {done ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'flex-start', paddingTop: '8px' }}>
+            <span
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                background: 'var(--tint2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#4A630B"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </span>
+            <span className="eyebrow" style={{ color: 'var(--deep)' }}>REQUEST SUBMITTED SUCCESSFULLY</span>
+            <h3 style={{ margin: 0, fontSize: '22px' }}>Your request is submitted successfully!</h3>
+            <p style={{ margin: 0, fontSize: '15px', lineHeight: 1.6, color: 'var(--text2)' }}>
+              Thank you, <b>{name}</b>! Within 24 hours our team will contact you on WhatsApp and Email regarding your request for <b>{courseName}</b> ({price}).
+            </p>
+
+            {/* Notification Highlights Box */}
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                background: 'var(--tint)',
+                border: '1px solid #D7E6B4',
+                borderRadius: '14px',
+                padding: '14px 16px',
+                boxSizing: 'border-box',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--ink)' }}>
+                <span style={{ fontSize: '18px' }}>💬</span>
+                <span>
+                  <b>WhatsApp:</b> Message will be sent to <b>+91 {phone}</b> within 24 hours.
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--ink)' }}>
+                <span style={{ fontSize: '18px' }}>✉️</span>
+                <span>
+                  <b>Email:</b> Confirmation details will be sent to <b>{email}</b> within 24 hours.
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--deep)', fontWeight: 700, paddingTop: '6px', borderTop: '1px solid #E2EEC8' }}>
+                <span style={{ fontSize: '14px' }}>⏱️</span>
+                <span>Our team will contact you within 24 hours guaranteed</span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: 'var(--bg2)',
+                borderRadius: '14px',
+                border: '1px solid var(--line)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                boxSizing: 'border-box',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.05em' }}>SELECTED COURSE</div>
+                <div style={{ fontWeight: 700, fontSize: '15px' }}>{courseName}</div>
+              </div>
+              <div className="serif" style={{ fontSize: '24px', fontWeight: 700, color: 'var(--deep)' }}>{price}</div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', width: '100%', paddingTop: '4px' }}>
+              {paymentLink ? (
+                <>
+                  <a
+                    className="btn btn-lime"
+                    href={paymentLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ flex: '1 1 200px', minHeight: '50px' }}
+                  >
+                    Proceed to Payment →
+                  </a>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={onClose}
+                    style={{ minHeight: '50px' }}
+                  >
+                    Close
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-lime"
+                  onClick={onClose}
+                  style={{ width: '100%', minHeight: '50px' }}
+                >
+                  Close
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {err && <div className="err">{err}</div>}
+
+            <div
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg2)',
+                borderRadius: '12px',
+                border: '1px solid var(--line)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: '13px',
+              }}
+            >
+              <span style={{ color: 'var(--text2)', fontWeight: 600 }}>
+                Course Fee · Knowledge only
+              </span>
+              <span className="serif" style={{ fontSize: '22px', fontWeight: 700, color: 'var(--ink)' }}>
+                {price}
+              </span>
+            </div>
+
+            <label className="field">
+              <span>Full Name <b style={{ color: '#e11d48' }}>*</b></span>
+              <input
+                type="text"
+                required
+                autoComplete="name"
+                placeholder="e.g. Rahul Sharma"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (err) setErr('');
+                }}
+              />
+            </label>
+
+            <label className="field">
+              <span>Contact Number <b style={{ color: '#e11d48' }}>*</b></span>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <span
+                  style={{
+                    position: 'absolute',
+                    left: '14px',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: 'var(--muted)',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  +91
+                </span>
+                <input
+                  type="tel"
+                  required
+                  autoComplete="tel"
+                  placeholder="10-digit mobile number"
+                  value={phone}
+                  onChange={handlePhoneChange}
+                  style={{ paddingLeft: '48px' }}
+                />
+              </div>
+              <span style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
+                We will send course access details to this number.
+              </span>
+            </label>
+
+            <label className="field">
+              <span>Email Address <b style={{ color: '#e11d48' }}>*</b></span>
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="e.g. rahul@gmail.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (err) setErr('');
+                }}
+              />
+              <span style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
+                Login credentials and confirmation will be sent to this email.
+              </span>
+            </label>
+
+            <button
+              type="submit"
+              className="btn btn-lime"
+              disabled={isSubmitting}
+              style={{
+                minHeight: '52px',
+                fontSize: '16px',
+                width: '100%',
+                marginTop: '6px',
+              }}
+            >
+              {isSubmitting ? 'Saving inquiry...' : `Buy now · ${price}`}
+            </button>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                color: 'var(--muted)',
+                textAlign: 'center',
+              }}
+            >
+              <span>⏱️</span>
+              <span>Within 24 hours our team will contact you on WhatsApp &amp; Email</span>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ================= COURSE MODAL ================= */
 function CourseModalContent({ courseId, onClose }) {
+  const [isBuying, setIsBuying] = useState(false);
+
   const isNt = courseId === 'nt';
   const c = isNt ? null : COURSES[courseId];
   const price = isNt ? '₹4,777' : '₹2,999';
@@ -276,9 +653,16 @@ function CourseModalContent({ courseId, onClose }) {
   const facts = isNt
     ? ['5 courses', 'Live + pre-recorded', 'Free e-books (PDF)', 'Without certificate']
     : [c.dur, 'Live + pre-recorded', 'Free e-book (PDF)', 'Without certificate'];
-  const buyUrl =
-    CONFIG.PAYMENT_LINKS[courseId] ||
-    waLink(`Hi, I want to buy the ${name} for ${price}.`);
+
+  if (isBuying) {
+    return (
+      <CourseBuyFormContent
+        courseId={courseId}
+        onClose={onClose}
+        onBack={() => setIsBuying(false)}
+      />
+    );
+  }
 
   return (
     <div>
@@ -360,16 +744,17 @@ function CourseModalContent({ courseId, onClose }) {
             </span>
           </div>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <a
+            <button
+              type="button"
               className="btn btn-lime"
-              href={buyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => sendTelemetry('buy_click', { course: name })}
+              onClick={() => {
+                sendTelemetry('buy_click', { course: name });
+                setIsBuying(true);
+              }}
               style={{ minHeight: '52px' }}
             >
               Buy now · {price}
-            </a>
+            </button>
             <a className="btn btn-ghost" href="#certificate" onClick={onClose}>
               Want a certificate?
             </a>
@@ -715,16 +1100,17 @@ function ApplyExamModalContent({ initData, onClose }) {
 
     setErr('');
 
-    // Submit inquiry to fg-api backend with subject "APPLY FOR CERTIFICATE EXAM"
+    // Submit inquiry to fg-api backend with subject including course name
     await submitContactInquiry({
       name: name.trim(),
       email: email.trim(),
       mobile: phone,
-      subject: 'APPLY FOR CERTIFICATE EXAM',
+      subject: `APPLY FOR CERTIFICATE EXAM: ${course}`,
       message: `Certificate Exam Application: Course: ${course}, Fee: ${price}, Payment: ${pay}, City: ${city.trim()}`,
       source: window.location.href,
       details: {
         certificate: course,
+        course: course,
         fee: price,
         paymentOption: pay,
         city: city.trim(),
