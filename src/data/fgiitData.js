@@ -183,6 +183,8 @@ export async function submitContactInquiry({
   if (isLocal) {
     endpoints.push('http://127.0.0.1:80/public/v1/contact-inquiry');
     endpoints.push('http://localhost:80/public/v1/contact-inquiry');
+    endpoints.push('http://127.0.0.1:8080/public/v1/contact-inquiry');
+    endpoints.push('http://localhost:8080/public/v1/contact-inquiry');
   }
   endpoints.push('https://api.fggroup.in/public/v1/contact-inquiry');
 
