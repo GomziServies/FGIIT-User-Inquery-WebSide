@@ -13,12 +13,8 @@ export default function Courses({ onOpenCourse, onOpenBuy }) {
       </div>
 
       <div
-        className="grid"
+        className="course-cards-grid"
         id="courseGrid"
-        style={{
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '12px',
-        }}
       >
         {COURSE_ORDER.map((id) => {
           const c = COURSES[id];

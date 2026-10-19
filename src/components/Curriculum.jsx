@@ -10,14 +10,27 @@ export default function Curriculum() {
       </div>
 
       <div
-        className="grid"
+        className="curriculum-cards-grid"
         id="months"
-        style={{
-          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-        }}
       >
         {MONTHS.map((m, idx) => (
-          <div key={idx} className="card">
+          <div
+            key={idx}
+            className="card"
+            style={{
+              transition: 'border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--lime)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(11, 18, 16, 0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--line)';
+              e.currentTarget.style.transform = 'none';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span
                 className="serif"
