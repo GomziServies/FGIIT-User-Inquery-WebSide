@@ -1,8 +1,15 @@
 export const CONFIG = {
-  SUBMIT_URL: import.meta.env.VITE_SUBMIT_URL || '',
-  WHATSAPP: import.meta.env.VITE_WHATSAPP_NUMBER || '918866842520',
-  PHONE_DISPLAY: import.meta.env.VITE_PHONE_DISPLAY || '+91 88668 42520',
-  API_URL: import.meta.env.VITE_API_URL || '',
+  SUBMIT_URL: import.meta.env?.VITE_SUBMIT_URL || '',
+  WHATSAPP: import.meta.env?.VITE_WHATSAPP_NUMBER || '918866842520',
+  PHONE_DISPLAY: import.meta.env?.VITE_PHONE_DISPLAY || '+91 88668 42520',
+  API_URL: import.meta.env?.VITE_API_URL || '',
+  INPTA_URL: import.meta.env?.VITE_INPTA_URL || 'https://fggroup.in/inpta/home-inpta',
+  APP_PLAY_URL:
+    import.meta.env?.VITE_APP_PLAY_URL ||
+    'https://play.google.com/store/apps/details?id=com.fgiit',
+  APP_APPLE_URL:
+    import.meta.env?.VITE_APP_APPLE_URL ||
+    'https://apps.apple.com/us/app/fgiit-academy/id6468647053',
   PAYMENT_LINKS: {
     pt: '',
     dn: '',
@@ -529,68 +536,132 @@ export const COURSES = {
 
 export const COURSE_ORDER = ['pt', 'dn', 'aas', 'pl', 'gi', 'ir'];
 
-export const MONTHS = [
+/* Nutri-Trainer Combo price (all courses except Steroids Masterclass) */
+export const COMBO_PRICE = '₹4,999';
+
+/* Pre-generated brochure files served from /images/brochure/ */
+export const BROCHURE_FILES = {
+  pt: 'FGIIT_Diploma_in_Personal_Trainer_Brochure.pdf',
+  dn: 'FGIIT_Diploma_in_Nutrition_Brochure.pdf',
+  aas: 'FGIIT_Anabolic_Androgenic_Steroids_Masterclass_Brochure.pdf',
+  pl: 'FGIIT_Powerlifting_Coach_Masterclass_Brochure.pdf',
+  gi: 'FGIIT_Group_Instructor_Masterclass_Brochure.pdf',
+  ir: 'FGIIT_Injury_Rehabilitation_Masterclass_Brochure.pdf',
+  nt: 'FGIIT_Nutri_Trainer_Combo_Brochure.pdf',
+};
+
+/* What the ₹2,999 course fee includes (learning access to ONE eligible course) */
+export const INCLUDES = [
   {
-    num: 'M1',
-    title: 'Foundations of the body',
-    items: [
-      'Anatomy and physiology',
-      'Hormones and the endocrine system',
-      'Biomechanics and kinesiology',
-      'Energy systems',
-    ],
+    id: 'live',
+    icon: 'live',
+    title: 'Live Online Classes',
+    desc: 'Interactive sessions with expert faculty, held live so you can ask questions in the class.',
   },
   {
-    num: 'M2',
-    title: 'Training science',
-    items: [
-      'All-muscle practical sessions',
-      'Warm-up, stretching and mobility',
-      'Program design and periodization',
-      'Group training formats',
-    ],
+    id: 'recorded',
+    icon: 'play',
+    title: 'Recorded Video Lessons',
+    desc: 'Revisit every session as many times as you need through the FGIIT Academy application.',
   },
   {
-    num: 'M3',
-    title: 'Nutrition',
-    items: [
-      'Macros, vitamins and minerals',
-      'Indian diet plans for fat loss and muscle',
-      'Reading blood reports',
-      'Supplements',
-    ],
+    id: 'ebooks',
+    icon: 'book',
+    title: 'E-Books & Study Materials',
+    desc: 'Digital notes, articles and a free e-book (PDF) with every course for revision and reference.',
   },
   {
-    num: 'M4',
-    title: 'Special populations & rehab',
-    items: [
-      'Posture analysis and correction',
-      'Injury prevention and rehab',
-      'Diabetes, PCOS, thyroid and BP clients',
-      'CPR and first aid',
-    ],
+    id: 'onecourse',
+    icon: 'layers',
+    title: 'Access to One Eligible Course',
+    desc: 'The fee covers one eligible course of your choice — not every course in the catalogue.',
   },
   {
-    num: 'M5',
-    title: 'Coaching & business',
-    items: [
-      'Client consultation and assessment',
-      'Selling PT packages',
-      'Instagram and personal branding',
-      'Ethics and scope of practice',
-    ],
-  },
-  {
-    num: 'M6',
-    title: 'Career launch',
-    items: [
-      'Theory and practical exam',
-      'Mock PT sessions',
-      'CV, portfolio and interview training',
-      'Internship and job placement',
-    ],
+    id: 'journey',
+    icon: 'route',
+    title: 'Structured Learning Journey',
+    desc: 'A clear, ordered curriculum for the course you pick, so you always know what comes next.',
   },
 ];
+
+export const ACCREDITATION_NOTE =
+  'Accreditation and certification are separate from the ₹2,999 course fee. Eligible students who wish to obtain accreditation or certification must apply separately through INPTA, subject to its applicable eligibility requirements, approval process, and fees.';
+
+/* Six learning stages of the Job-Ready Batch journey */
+export const TIMELINE = [
+  {
+    num: 'Month 1',
+    title: 'Foundations of the Human Body',
+    desc: 'Basic anatomy, physiology and human movement.',
+  },
+  {
+    num: 'Month 2',
+    title: 'Exercise & Training Science',
+    desc: 'Exercise techniques, training principles, exercise selection and program design.',
+  },
+  {
+    num: 'Month 3',
+    title: 'Nutrition Fundamentals',
+    desc: 'Macronutrients, micronutrients and practical dietary planning.',
+  },
+  {
+    num: 'Month 4',
+    title: 'Fitness Assessment & Program Design',
+    desc: 'Client assessments, goal setting and personalised training plans.',
+  },
+  {
+    num: 'Month 5',
+    title: 'Practical Coaching Skills',
+    desc: 'Communication, exercise instruction, client management and coaching.',
+  },
+  {
+    num: 'Month 6',
+    title: 'Career Preparation & Client Handling',
+    desc: 'Practical application and preparation for fitness industry opportunities.',
+  },
+];
+
+export const TIMELINE_NOTE =
+  'This is the Job-Ready Batch learning journey. Each course you enrol in follows its own curriculum — open any course above to see its exact syllabus.';
+
+/* FGIIT Academy app — official store listings and authentic screenshots */
+export const APP = {
+  name: 'FGIIT Academy',
+  icon: '/images/app/app-icon.png',
+  live: {
+    src: '/images/online-zoom.jpg',
+    alt: 'Students attending a live FGIIT online class on a video call',
+  },
+  liveAlt: {
+    src: '/images/hybrid-wide.jpg',
+    alt: 'FGIIT classroom where offline and online students attend the same live class',
+  },
+  recorded: {
+    src: '/images/app/app-journey-screen.jpg',
+    alt: 'FGIIT Academy app home screen with the learning dashboard and recorded courses',
+  },
+  materials: {
+    src: '/images/app/app-lesson-screen.jpg',
+    alt: 'FGIIT Academy app lecture view with downloadable study material and PDF notes',
+  },
+  shots: [
+    {
+      file: 'app-journey-screen.jpg',
+      label: 'My Learning',
+      alt: 'FGIIT Academy app home screen with the learning dashboard and recorded courses',
+    },
+    {
+      file: 'app-organised-screen.jpg',
+      label: 'Curriculum & Lectures',
+      alt: 'FGIIT Academy app curriculum list showing structured lecture modules',
+    },
+    {
+      file: 'app-students-screen.jpg',
+      label: 'Certified Students',
+      alt: 'FGIIT Academy app showing certified students and the courses they completed',
+    },
+  ],
+};
 
 export const JOURNEY = [
   { num: '1', title: 'Admission', desc: 'Join online or offline.' },
@@ -601,31 +672,21 @@ export const JOURNEY = [
   { num: '6', title: 'Job placement', desc: '100% placement, India or abroad.' },
 ];
 
-export const CERT_STEPS = [
-  { num: 'Day 1', title: 'Apply online', desc: 'Fill the form and pay the fee.' },
-  { num: 'Day 2', title: '100-mark MCQ exam', desc: 'Online objective test.' },
-  { num: 'Day 4', title: 'Viva', desc: 'A short oral interview with our panel.' },
-  {
-    num: 'Within 72 hours',
-    title: 'Certificate at your door',
-    desc: 'Delivered to your home by post or courier.',
-  },
-];
-
-export const CERT_ONLY = [
-  { name: 'Diploma in Personal Trainer', price: '₹33,777', kind: 'big' },
-  { name: 'Diploma in Nutrition', price: '₹33,777', kind: 'big' },
-  { name: 'Group Instructor Masterclass', price: '₹7,080', kind: 'small' },
-  { name: 'Injury Rehabilitation Masterclass', price: '₹7,080', kind: 'small' },
-  { name: 'Powerlifting Coach Masterclass', price: '₹7,080', kind: 'small' },
+/* Accreditation options applied for separately through INPTA (not part of the ₹2,999 fee) */
+export const CERT_OPTIONS = [
+  { id: 'pt', name: 'Diploma in Personal Trainer', fee: '₹33,777', kind: 'big' },
+  { id: 'dn', name: 'Diploma in Nutrition', fee: '₹33,777', kind: 'big' },
+  { id: 'gi', name: 'Group Instructor Masterclass', fee: '₹7,080', kind: 'small' },
+  { id: 'ir', name: 'Injury Rehabilitation Masterclass', fee: '₹7,080', kind: 'small' },
+  { id: 'pl', name: 'Powerlifting Coach Masterclass', fee: '₹7,080', kind: 'small' },
 ];
 
 export const CERT_IMGS = [
-  { file: 'cert-pt.jpg', alt: 'Personal Trainer' },
-  { file: 'cert-dn.jpg', alt: 'Nutrition' },
-  { file: 'cert-gi.jpg', alt: 'Group Instructor' },
-  { file: 'cert-ir.jpg', alt: 'Injury Rehabilitation' },
-  { file: 'cert-pl.jpg', alt: 'Powerlifting Coach' },
+  { file: 'cert-pt.jpg', alt: 'Sample Personal Trainer accreditation certificate' },
+  { file: 'cert-dn.jpg', alt: 'Sample Nutrition accreditation certificate' },
+  { file: 'cert-gi.jpg', alt: 'Sample Group Instructor accreditation certificate' },
+  { file: 'cert-ir.jpg', alt: 'Sample Injury Rehabilitation accreditation certificate' },
+  { file: 'cert-pl.jpg', alt: 'Sample Powerlifting Coach accreditation certificate' },
 ];
 
 export const GALLERY = [
@@ -649,28 +710,36 @@ export const COACHES = [
 
 export const FAQS = [
   {
-    q: 'Who can join the Job-Ready Batch?',
-    a: 'Anyone after 10th or 12th who wants a fitness career, plus working trainers who want to upskill. No gym experience needed.',
+    q: 'What is included in the ₹2,999 fee?',
+    a: 'Live online classes with expert faculty, recorded video lessons, e-books and study materials, a structured learning journey for the course you pick, and access to the FGIIT Academy app where all of it is delivered.',
   },
   {
-    q: 'Does the ₹2,999 course include a certificate?',
-    a: 'The ₹2,999 courses and the ₹4,777 Nutri-Trainer Combo are knowledge only, without certificate, with live and pre-recorded classes and free e-books. To get certified, give the 100-mark MCQ exam and viva, and receive your certificate in 7 days.',
+    q: 'Does ₹2,999 include all courses?',
+    a: 'No. The ₹2,999 fee gives you access to one eligible course of your choice. The Nutri-Trainer Combo — Personal Trainer, Nutrition, Group Instructor, Injury Rehabilitation and Powerlifting together — is ₹4,999, and the Steroids Masterclass is a separate course.',
   },
   {
-    q: 'Will I get a job after the Job-Ready Batch?',
-    a: 'Yes. After you clear the exam and complete your internship, our placement cell gives you 100% job placement with a handsome salary package, in India or abroad.',
+    q: 'Are live online classes included?',
+    a: 'Yes. Live online sessions are part of the course fee. They run on a fixed schedule, you can join from your phone or laptop, and every session is also recorded so you can revise it later.',
   },
   {
-    q: 'Are classes online or offline?',
-    a: 'Online and classroom batches run live at the same time, so you can join from anywhere. Offline courses are also available in select cities.',
+    q: 'Are recorded videos and e-books included?',
+    a: 'Yes. Recorded lessons and a free e-book (PDF) come with every course, and all of it is available in the FGIIT Academy app along with lecture notes and other study material.',
   },
   {
-    q: 'I already have the knowledge. Can I get only the certificate?',
-    a: 'Yes. Certificates start at ₹7,080 (₹33,777 for a diploma, payable in 2 parts). Apply online, give the 100-mark MCQ exam on day 2 and the viva on day 4. Your certificate reaches your home by post or courier within 72 hours after that. It is Central Government approved, internationally valid and valid for life.',
+    q: 'Is accreditation or certification included in the course fee?',
+    a: 'No. Accreditation and certification are separate from the ₹2,999 course fee. Eligible students who wish to obtain accreditation or certification must apply separately through INPTA, subject to its applicable eligibility requirements, approval process and fees.',
   },
   {
-    q: 'How can an employer verify my certificate?',
-    a: 'Every FGIIT certificate carries a certificate number, UIN and QR code, with INPTA, IPTNA and ISO 9001:2015 marks.',
+    q: 'How can I apply for an INPTA certificate?',
+    a: 'Use the "Apply for Your Certificate" button in the INPTA section. Fill in your details and choose the accreditation you want, and our team will get back to you within 24 hours with the next steps and applicable fees.',
+  },
+  {
+    q: 'How can I book a free demo class?',
+    a: 'Tap "Join a Free Demo Class" anywhere on the page. You can either ask for a recorded class or pick a live slot from Monday to Saturday, and the class details reach you on WhatsApp.',
+  },
+  {
+    q: 'How can I download the complete course brochure?',
+    a: 'Use the "Download the Complete Course Brochure" button in the learning journey section. Share your name, contact number, email, address and the course you are interested in — the PDF downloads straight to your device and is also emailed to you, and our team follows up on WhatsApp within 24 hours.',
   },
 ];
 
@@ -714,10 +783,10 @@ export function calculateScore(answers) {
     score >= 14
       ? ['Elite Coach', 'You think like the top coaches in the industry.']
       : score >= 11
-      ? ['Advanced Coach', 'A strong base, with a few gaps to close.']
-      : score >= 7
-      ? ['Gym Trainer', 'You know the basics, but high-income coaches know a lot more.']
-      : ['Starter Coach', 'The best time to start learning properly.'];
+        ? ['Advanced Coach', 'A strong base, with a few gaps to close.']
+        : score >= 7
+          ? ['Gym Trainer', 'You know the basics, but high-income coaches know a lot more.']
+          : ['Starter Coach', 'The best time to start learning properly.'];
 
   const weak = cats.slice().sort((a, b) => a.p - b.p).slice(0, 2);
 

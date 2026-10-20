@@ -118,6 +118,12 @@ export default function CoachLevelQuiz({ onOpenReport }) {
     }
 
     // Format rich message for the FGIIT Contact Inquiries admin panel
+    // The report link is included in the message so it also reaches the
+    // acknowledgement email sent to the candidate.
+    const reportLinkLine = uploadedFileUrl
+      ? `Assessment Report (PDF): ${uploadedFileUrl}`
+      : 'Assessment Report (PDF): downloaded to your device after submission.';
+
     const formattedMessage = [
       `Coach Level Test Assessment`,
       `Score: ${report.score}/${N} (${report.level[0]})`,
@@ -126,10 +132,12 @@ export default function CoachLevelQuiz({ onOpenReport }) {
       ``,
       `Domain Breakdown:`,
       ...report.cats.map((c) => `- ${c.n}: ${c.got}/${c.total} (${c.p}%)`),
+      ``,
+      reportLinkLine,
     ].join('\n');
 
     // Submit inquiry to fg-api backend with subject "Coach Level Test Assessment:"
-    await submitContactInquiry({
+    const inquiryRes = await submitContactInquiry({
       name: name.trim(),
       email: email.trim(),
       mobile: phone,
@@ -148,6 +156,8 @@ export default function CoachLevelQuiz({ onOpenReport }) {
         weakAreas: report.weak.map((w) => w.n).join(', '),
         sectionScores: report.cats.map((c) => `${c.n} ${c.got}/${c.total}`).join('; '),
         categories: report.cats,
+        reportUrl: uploadedFileUrl,
+        reportFileName: cleanFilename,
       },
     });
 
@@ -172,6 +182,8 @@ export default function CoachLevelQuiz({ onOpenReport }) {
       email: email.trim(),
       phone,
       status,
+      fileUrl: uploadedFileUrl,
+      inquirySaved: inquiryRes?.success !== false,
     });
   };
 
@@ -201,10 +213,26 @@ export default function CoachLevelQuiz({ onOpenReport }) {
           }}
         >
           <span className="eyebrow">FREE · 15 QUESTIONS · 4 MINUTES</span>
-          <h2 className="h2">What level of coach are you?</h2>
+          <h2 className="h2">What Level of Fitness Trainer Are You?</h2>
           <p style={{ margin: 0, fontSize: '16px', lineHeight: 1.65, color: 'var(--muted)' }}>
-            The questions every high-income personal trainer should answer. Get your score and a section-wise report instantly.
+            Take our free assessment to discover your current trainer level and identify
+            opportunities to improve your knowledge and skills.
           </p>
+          <button
+            type="button"
+            className="btn btn-lime"
+            onClick={() => {
+              const quiz = document.getElementById('quiz');
+              if (quiz) {
+                quiz.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const first = quiz.querySelector('.opt');
+                if (first) first.focus({ preventScroll: true });
+              }
+            }}
+            style={{ alignSelf: 'flex-start', minHeight: '48px' }}
+          >
+            Take the Free Assessment
+          </button>
           <div className="chips" id="catList">
             {CATS.map((cat, idx) => (
               <span
@@ -447,13 +475,13 @@ export default function CoachLevelQuiz({ onOpenReport }) {
                     type="button"
                     className="btn btn-green"
                     onClick={() =>
-                      onOpenReport({
-                        ...currentResult,
-                        userName: name.trim(),
-                        email: email.trim(),
-                        phone,
-                        status,
-                      })
+                    onOpenReport({
+                      ...currentResult,
+                      userName: name.trim(),
+                      email: email.trim(),
+                      phone,
+                      status,
+                    })
                     }
                   >
                     View my report

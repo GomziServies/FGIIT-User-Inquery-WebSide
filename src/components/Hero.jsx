@@ -6,76 +6,119 @@ export default function Hero({ onOpenDemo }) {
       <div
         className="wrap"
         style={{
-          paddingTop: '44px',
-          paddingBottom: '44px',
+          paddingTop: 'clamp(36px, 5vw, 68px)',
+          paddingBottom: 'clamp(32px, 4vw, 56px)',
           display: 'flex',
           flexWrap: 'wrap',
-          gap: '36px',
+          gap: 'clamp(32px, 5vw, 64px)',
           alignItems: 'center',
         }}
       >
-        <div style={{ flex: '1 1 440px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <div
+          style={{
+            flex: '1 1 480px',
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '18px',
+            alignItems: 'flex-start',
+          }}
+        >
           <span
             style={{
-              alignSelf: 'flex-start',
-              padding: '7px 14px',
+              padding: '8px 16px',
               borderRadius: '999px',
               background: '#fff',
               border: '1px solid #D7E6B4',
               color: 'var(--deep)',
               fontSize: '12px',
               fontWeight: 700,
-              letterSpacing: '.06em',
+              letterSpacing: '.08em',
+              textTransform: 'uppercase',
             }}
           >
-            JOB-READY BATCH · 6-MONTH DIPLOMA · ONLINE &amp; OFFLINE
+            Six-Month Diploma Online Courses
           </span>
-          <h1 style={{ margin: 0, fontSize: 'clamp(32px, 4.4vw, 46px)', lineHeight: 1.12 }}>
-            Join our Job-Ready Batch.
+
+          <span
+            style={{
+              fontSize: '14px',
+              fontWeight: 700,
+              letterSpacing: '.06em',
+              textTransform: 'uppercase',
+              color: 'var(--muted)',
+            }}
+          >
+            Live Online Classes
+          </span>
+
+          <h1
+            style={{
+              margin: 0,
+              fontSize: 'clamp(34px, 5vw, 56px)',
+              lineHeight: 1.08,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Join Our Job-Ready Batch
           </h1>
-          <p style={{ margin: 0, fontSize: '17px', lineHeight: 1.65, color: 'var(--muted)', maxWidth: '520px' }}>
-            Learn training, nutrition, rehab and the business of coaching A to Z in 6 months. After the course, get{' '}
-            <b style={{ color: 'var(--ink)' }}>100% job placement with a handsome salary package</b>, in India or abroad.
+
+          <p
+            style={{
+              margin: 0,
+              fontSize: 'clamp(18px, 2.2vw, 23px)',
+              lineHeight: 1.4,
+              fontWeight: 700,
+              color: 'var(--deep)',
+              maxWidth: '540px',
+            }}
+          >
+            100% Job Placement with Handsome Salary Packages
           </p>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <a className="btn btn-lime" href="#test" style={{ minHeight: '52px' }}>
-              Take the free Coach Level Test
+
+          <p
+            style={{
+              margin: 0,
+              fontSize: '16px',
+              lineHeight: 1.65,
+              color: 'var(--muted)',
+              maxWidth: '540px',
+            }}
+          >
+            Open to students who have passed Class 10th or Class 12th, and to working trainers who
+            want to upskill. Learn training, nutrition, rehabilitation and the business of coaching
+            on a structured syllabus, then move into real client work.
+          </p>
+
+          <div className="btn-row">
+            <a className="btn btn-lime" href="#price" style={{ minHeight: '54px' }}>
+              Enroll Now – ₹2,999
             </a>
             <button
               type="button"
-              className="btn btn-ghost"
+              className="btn btn-green"
               onClick={onOpenDemo}
-              style={{ minHeight: '52px' }}
+              style={{ minHeight: '54px' }}
             >
-              Join free demo class
+              Join a Free Demo Class
             </button>
+            <a className="btn btn-ghost" href="#test" style={{ minHeight: '54px' }}>
+              Discover Your Trainer Level – Free Test
+            </a>
           </div>
-          <div
-            className="grid"
-            style={{
-              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-              gap: '12px',
-              paddingTop: '8px',
-              maxWidth: '520px',
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span className="serif" style={{ fontSize: '26px', color: 'var(--deep)' }}>
-                25,000+
-              </span>
-              <span style={{ fontSize: '13px', color: 'var(--muted)' }}>students trained</span>
+
+          <div className="stat-row" style={{ paddingTop: '6px' }}>
+            <div className="stat">
+              <span className="stat-num">25,000+</span>
+              <span className="stat-label">students trained</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span className="serif" style={{ fontSize: '26px', color: 'var(--deep)' }}>
-                100%
-              </span>
-              <span style={{ fontSize: '13px', color: 'var(--muted)' }}>job placement</span>
+            <div className="stat">
+              <span className="stat-num">100%</span>
+              <span className="stat-label">job placement</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span className="serif" style={{ fontSize: '26px', color: 'var(--deep)' }}>
-                Lifetime
-              </span>
-              <span style={{ fontSize: '13px', color: 'var(--muted)' }}>student support</span>
+            <div className="stat">
+              <span className="stat-num">Lifetime</span>
+              <span className="stat-label">student support</span>
             </div>
           </div>
         </div>
@@ -86,10 +129,10 @@ export default function Hero({ onOpenDemo }) {
             alt="FGIIT faculty teaching an offline class while online students join live on screen"
             style={{
               width: '100%',
-              maxHeight: '520px',
+              maxHeight: '560px',
               aspectRatio: '4/5',
               objectFit: 'cover',
-              borderRadius: '24px',
+              borderRadius: '28px',
               display: 'block',
             }}
           />
@@ -97,46 +140,31 @@ export default function Hero({ onOpenDemo }) {
             style={{
               position: 'absolute',
               left: '16px',
-              bottom: '16px',
               right: '16px',
-              background: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: '16px',
-              padding: '12px 16px',
+              bottom: '16px',
+              background: 'rgba(255, 255, 255, 0.96)',
+              borderRadius: '18px',
+              padding: '14px 18px',
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              boxShadow: '0 8px 24px rgba(11, 18, 16, 0.12)',
+              gap: '14px',
+              boxShadow: '0 10px 28px rgba(11, 18, 16, 0.14)',
             }}
           >
             <span
+              className="serif"
               style={{
-                width: '36px',
-                height: '36px',
+                fontSize: '26px',
+                lineHeight: 1,
+                color: 'var(--deep)',
                 flex: 'none',
-                borderRadius: '50%',
-                background: 'var(--lime)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
               }}
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#0B1210"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
+              ₹2,999
             </span>
             <span style={{ fontSize: '13px', lineHeight: 1.45, color: 'var(--text2)' }}>
-              <b style={{ color: 'var(--ink)' }}>Online + offline, live together.</b> Online students feel like they’re in
-              class and ask questions one-on-one.
+              <b style={{ color: 'var(--ink)' }}>One eligible course.</b> Live classes, recorded
+              lessons, e-books and the app.
             </span>
           </div>
         </div>

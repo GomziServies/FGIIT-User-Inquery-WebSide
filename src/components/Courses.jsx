@@ -1,140 +1,117 @@
 import React from 'react';
-import { COURSES, COURSE_ORDER } from '../data/fgiitData';
+import { COURSES, COURSE_ORDER, COMBO_PRICE } from '../data/fgiitData';
+import Icon from './Icons';
+
+const keyOutcomes = (syllabus) => {
+  if (!syllabus || syllabus.length === 0) return [];
+  if (syllabus.length <= 3) return syllabus;
+  return [syllabus[0], syllabus[Math.floor(syllabus.length / 2)], syllabus[syllabus.length - 1]];
+};
 
 export default function Courses({ onOpenCourse, onOpenBuy }) {
   return (
-    <section id="courses" className="wrap sec">
+    <section id="courses" className="wrap section">
       <div className="head">
-        <span className="eyebrow">COURSES · ₹2,999 FULL COURSE</span>
-        <h2>Learn any course for just ₹2,999.</h2>
+        <span className="eyebrow">Course selection</span>
+        <h2>Choose the Course That Fits Your Goals</h2>
         <p>
-          Without certificate, course and knowledge only. Live classes plus pre-recorded lectures, and a free e-book (PDF) with every course. Tap a course to see the full syllabus.
+          Every course is taught live online with recorded lessons and a free e-book. Open a course
+          to read its complete syllabus, or enrol straight away.
         </p>
       </div>
 
-      <div
-        className="course-cards-grid"
-        id="courseGrid"
-      >
+      <div className="course-grid">
         {COURSE_ORDER.map((id) => {
           const c = COURSES[id];
           return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => onOpenCourse(id)}
-              style={{
-                textAlign: 'left',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                color: 'var(--ink)',
-                background: '#fff',
-                border: '1px solid var(--line)',
-                borderRadius: '16px',
-                padding: '18px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                transition: 'border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--lime)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(11, 18, 16, 0.06)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--line)';
-                e.currentTarget.style.transform = 'none';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              <span style={{ fontWeight: 700, fontSize: '16px', lineHeight: 1.35 }}>
-                {c.name}
-              </span>
-              <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
-                {c.dur} · Live + pre-recorded · Free e-book
-              </span>
-              <span
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '10px',
-                  paddingTop: '8px',
-                  marginTop: 'auto',
-                  borderTop: '1px solid #EEF2F0',
-                  width: '100%',
-                }}
-              >
-                <span className="serif" style={{ fontSize: '24px' }}>
-                  {c.price}
+            <article key={id} className="course-tile">
+              <div className="course-tile-head">
+                <h3 className="course-tile-name">{c.name}</h3>
+                <span className="course-tile-price">{c.price}</span>
+              </div>
+
+              <div className="course-tile-block">
+                <span className="course-tile-label">What you will learn</span>
+                <ul className="course-tile-list">
+                  {keyOutcomes(c.syllabus).map((s) => (
+                    <li key={s}>
+                      <span className="tick-ico" aria-hidden="true">
+                        ✓
+                      </span>
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="course-tile-block">
+                <span className="course-tile-label">Learning format</span>
+                <span className="course-tile-format">
+                  <Icon name="live" size={15} />
+                  {c.dur} · Live online + recorded · Free e-book
                 </span>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--deep)' }}>
-                  View syllabus →
-                </span>
-              </span>
-            </button>
+              </div>
+
+              <div className="course-tile-actions">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => onOpenCourse(id)}
+                  style={{ minHeight: '44px', flex: '1 1 140px' }}
+                >
+                  Explore Course
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-lime"
+                  onClick={() => onOpenBuy(id)}
+                  style={{ minHeight: '44px', flex: '1 1 140px' }}
+                >
+                  Enroll Now
+                </button>
+              </div>
+            </article>
           );
         })}
       </div>
 
-      {/* Nutri-Trainer Combo Card */}
+      {/* Nutri-Trainer Combo */}
       <button
         type="button"
         onClick={() => onOpenCourse('nt')}
+        className="combo-tile"
         style={{
           textAlign: 'left',
           cursor: 'pointer',
           fontFamily: 'inherit',
           color: 'var(--ink)',
-          background: 'var(--tint)',
-          border: '2px solid var(--lime)',
-          borderRadius: '20px',
-          padding: '22px',
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '16px',
-          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 8px 24px rgba(155, 192, 40, 0.2)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'none';
-          e.currentTarget.style.boxShadow = 'none';
         }}
       >
-        <span style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 320px' }}>
+        <span style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: '1 1 320px' }}>
           <span
             style={{
               alignSelf: 'flex-start',
               fontSize: '11px',
               fontWeight: 700,
               letterSpacing: '.08em',
-              padding: '4px 10px',
+              padding: '5px 11px',
               borderRadius: '999px',
               background: 'var(--lime)',
             }}
           >
             BEST VALUE · ALL-IN-ONE
           </span>
-          <span style={{ fontWeight: 700, fontSize: '19px' }}>
-            Nutri-Trainer Combo
-          </span>
-          <span style={{ fontSize: '14px', lineHeight: 1.55, color: 'var(--text2)' }}>
-            Combination of all courses: Personal Trainer, Nutrition, Group Instructor, Injury Rehabilitation and Powerlifting. Steroids Masterclass not included. Without certificate, free e-books included.
+          <span style={{ fontWeight: 700, fontSize: '20px' }}>Nutri-Trainer Combo</span>
+          <span style={{ fontSize: '14.5px', lineHeight: 1.6, color: 'var(--text2)' }}>
+            Personal Trainer, Nutrition, Group Instructor, Injury Rehabilitation and Powerlifting
+            together. Steroids Masterclass not included. Free e-books included.
           </span>
         </span>
-        <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-          <span className="serif" style={{ fontSize: '34px' }}>
-            ₹4,777
+        <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+          <span className="serif" style={{ fontSize: '36px' }}>
+            {COMBO_PRICE}
           </span>
-          <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--deep)' }}>
-            View full syllabus →
-          </span>
+          <span className="course-link">View full syllabus →</span>
         </span>
       </button>
     </section>

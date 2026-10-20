@@ -14,41 +14,59 @@ export default function Footer() {
       <div
         className="wrap"
         style={{
-          paddingTop: '36px',
+          paddingTop: '44px',
           paddingBottom: '36px',
           display: 'flex',
           flexWrap: 'wrap',
           justifyContent: 'space-between',
-          gap: '28px',
+          gap: '32px',
         }}
       >
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', maxWidth: '380px' }}>
+        <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', maxWidth: '360px' }}>
           <img
             src="/images/fgiit-logo.png"
             alt="FGIIT Logo"
-            width="52"
-            height="52"
+            width="48"
+            height="48"
             style={{ flex: 'none' }}
           />
           <span style={{ fontSize: '14px', lineHeight: 1.6 }}>
-            Fitness with Gomzi International Institute of Teaching. Skill development for fitness and nutrition careers.
+            Fitness with Gomzi International Institute of Teaching. Skill development for fitness and
+            nutrition careers.
           </span>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '14px', maxWidth: '320px' }}>
           <b style={{ color: 'var(--ink)' }}>Head Office · INPTA</b>
           <span style={{ lineHeight: 1.6 }}>
-            2, GOMZI Abhushan Bungalows, Char Rasta, near Alkapuri, Shraddha Society, Katargam, Surat, Gujarat 395008
+            2, GOMZI Abhushan Bungalows, Char Rasta, near Alkapuri, Shraddha Society, Katargam, Surat,
+            Gujarat 395008
           </span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '14px' }}>
-          <b style={{ color: 'var(--ink)' }}>Contact</b>
-          <a href={`tel:+${CONFIG.WHATSAPP}`} style={{ fontWeight: 700 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '14px' }}>
+          <b style={{ color: 'var(--ink)', marginBottom: '4px' }}>Contact</b>
+          <a href={`tel:+${CONFIG.WHATSAPP}`} className="footer-link" style={{ fontWeight: 700 }}>
             {CONFIG.PHONE_DISPLAY}
           </a>
-          <a href="https://fggroup.in" target="_blank" rel="noopener noreferrer">
+          <a href="https://fggroup.in" target="_blank" rel="noopener noreferrer" className="footer-link">
             fggroup.in
+          </a>
+          <a href={CONFIG.INPTA_URL} target="_blank" rel="noopener noreferrer" className="footer-link">
+            INPTA Accreditation
+          </a>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '14px' }}>
+          <b style={{ color: 'var(--ink)', marginBottom: '4px' }}>FGIIT Academy app</b>
+          <a href={CONFIG.APP_PLAY_URL} target="_blank" rel="noopener noreferrer" className="footer-link">
+            Google Play
+          </a>
+          <a href={CONFIG.APP_APPLE_URL} target="_blank" rel="noopener noreferrer" className="footer-link">
+            App Store
+          </a>
+          <a href="#courses" className="footer-link">
+            Courses &amp; fees
           </a>
         </div>
       </div>

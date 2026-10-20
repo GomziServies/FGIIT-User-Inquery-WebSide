@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
   COURSES,
+  COURSE_ORDER,
+  CERT_OPTIONS,
+  BROCHURE_FILES,
   CONFIG,
   waLink,
   okPhone,
@@ -10,6 +13,7 @@ import {
   getDemoDays,
 } from '../../data/fgiitData';
 import { downloadCoachReportPDF } from '../../utils/pdfGenerator';
+import { downloadCourseBrochurePDF } from '../../utils/brochureGenerator';
 
 export default function ModalRoot({ modalState, onClose }) {
   const { type, data } = modalState;
@@ -62,8 +66,8 @@ export default function ModalRoot({ modalState, onClose }) {
         {type === 'course' && <CourseModalContent courseId={data} onClose={onClose} />}
         {type === 'buy' && <CourseBuyFormContent courseId={data} onClose={onClose} />}
         {type === 'demo' && <DemoModalContent onClose={onClose} />}
-        {type === 'apply' && <ApplyExamModalContent initData={data} onClose={onClose} />}
-        {type === 'emi' && <EmiModalContent onClose={onClose} />}
+        {type === 'certapply' && <CertificateApplyModalContent onClose={onClose} />}
+        {type === 'brochure' && <BrochureModalContent onClose={onClose} />}
       </div>
     </div>
   );
@@ -71,7 +75,7 @@ export default function ModalRoot({ modalState, onClose }) {
 
 /* ================= REPORT MODAL ================= */
 function ReportModalContent({ report, onClose }) {
-  const { score, totalQuestions, level, cats, weak, userName } = report;
+  const { score, totalQuestions, level, cats, weak, userName, fileUrl, inquirySaved } = report;
   const circ = 339.3;
   const low = score < 11;
   const firstName = (userName ? userName.split(' ')[0] : 'Your').toUpperCase();
@@ -168,8 +172,34 @@ function ReportModalContent({ report, onClose }) {
           >
             <path d="M20 6 9 17l-5-5" />
           </svg>
-          <span>Your official assessment report PDF has been downloaded automatically.</span>
+          <span style={{ flex: 1 }}>Your official assessment report PDF has been downloaded automatically.</span>
+          {fileUrl && (
+            <a
+              href={fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontWeight: 700, whiteSpace: 'nowrap' }}
+            >
+              Also emailed to you →
+            </a>
+          )}
         </div>
+
+        {inquirySaved === false && (
+          <div
+            style={{
+              padding: '12px 14px',
+              background: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              borderRadius: '12px',
+              fontSize: '13px',
+              color: '#991B1B',
+            }}
+          >
+            We could not save your details to our system just now. Please keep the downloaded report
+            and WhatsApp us on +91 88668 42520 so we can follow up with you.
+          </div>
+        )}
 
         <span style={{ fontWeight: 700, fontSize: '15px' }}>Section-wise score</span>
         {cats.map((c, i) => (
@@ -245,11 +275,11 @@ function ReportModalContent({ report, onClose }) {
           </button>
           <a
             className="btn btn-lime"
-            href="#courses"
+            href="#fee"
             onClick={onClose}
             style={{ minHeight: '52px' }}
           >
-            Click here to join our 6-month Job-Ready Batch
+            Join the 6-month Job-Ready Batch
           </a>
           <a
             className="btn btn-ghost"
@@ -269,7 +299,7 @@ function ReportModalContent({ report, onClose }) {
 function CourseBuyFormContent({ courseId, onClose, onBack }) {
   const isNt = courseId === 'nt';
   const c = isNt ? null : COURSES[courseId];
-  const price = isNt ? '₹4,777' : (c?.price || '₹2,999');
+  const price = isNt ? '₹4,999' : (c?.price || '₹2,999');
   const courseName = isNt ? 'Nutri-Trainer Combo' : (c?.name || 'Course');
 
   const [name, setName] = useState('');
@@ -305,9 +335,10 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
     setErr('');
     setIsSubmitting(true);
 
+    let inquiryRes;
     try {
       // 1. Submit contact inquiry to fg-api backend with 24h SLA and notification metadata
-      const inquiryRes = await submitContactInquiry({
+      inquiryRes = await submitContactInquiry({
         name: name.trim(),
         email: email.trim(),
         mobile: phone,
@@ -342,14 +373,21 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
         phone,
         email: email.trim(),
       });
-
-      setIsSubmitting(false);
-      setDone(true);
     } catch (submitErr) {
       console.error('[FGIIT] Purchase inquiry failed:', submitErr);
-      setIsSubmitting(false);
-      setDone(true);
+      inquiryRes = { success: false };
     }
+
+    setIsSubmitting(false);
+
+    if (!inquiryRes?.success) {
+      setErr(
+        'We could not save your request just now. Please try again, or message us on WhatsApp and we will enrol you manually.',
+      );
+      return;
+    }
+
+    setDone(true);
   };
 
   return (
@@ -645,7 +683,7 @@ function CourseModalContent({ courseId, onClose }) {
 
   const isNt = courseId === 'nt';
   const c = isNt ? null : COURSES[courseId];
-  const price = isNt ? '₹4,777' : '₹2,999';
+  const price = isNt ? '₹4,999' : '₹2,999';
   const name = isNt ? 'Nutri-Trainer Combo' : c.name;
   const list = isNt
     ? ['pt', 'dn', 'gi', 'ir', 'pl'].map((k) => COURSES[k].name)
@@ -755,8 +793,8 @@ function CourseModalContent({ courseId, onClose }) {
             >
               Buy now · {price}
             </button>
-            <a className="btn btn-ghost" href="#certificate" onClick={onClose}>
-              Want a certificate?
+            <a className="btn btn-ghost" href="#inpta" onClick={onClose}>
+              Need accreditation only?
             </a>
           </div>
         </div>
@@ -810,7 +848,7 @@ function DemoModalContent({ onClose }) {
     setErr('');
 
     // Submit inquiry to fg-api backend with subject "Demo Class"
-    await submitContactInquiry({
+    const inquiryRes = await submitContactInquiry({
       name: name.trim(),
       email: email.trim(),
       mobile: phone,
@@ -833,6 +871,14 @@ function DemoModalContent({ onClose }) {
       day: day || '',
       slot: slot || '',
     });
+
+    if (!inquiryRes?.success) {
+      setErr(
+        'We could not book your class just now. Please try again, or message us on WhatsApp and we will book your seat.',
+      );
+      return;
+    }
+
     setDone(true);
   };
 
@@ -1051,23 +1097,17 @@ function DemoModalContent({ onClose }) {
   );
 }
 
-/* ================= APPLY EXAM MODAL ================= */
-function ApplyExamModalContent({ initData, onClose }) {
-  const { course, price, kind } = initData;
+
+/* ================= CERTIFICATE APPLICATION (INPTA) MODAL ================= */
+function CertificateApplyModalContent({ onClose }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [city, setCity] = useState('');
-  const [pay, setPay] = useState('');
+  const [course, setCourse] = useState('');
   const [err, setErr] = useState('');
   const [done, setDone] = useState(false);
-
-  const payOptions =
-    kind === 'all'
-      ? ['Full payment', 'EMI (12 months, 0% interest)']
-      : kind === 'big'
-      ? ['Full payment', '2-part payment']
-      : ['Full payment'];
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePhoneChange = (e) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
@@ -1085,47 +1125,69 @@ function ApplyExamModalContent({ initData, onClose }) {
       setErr('Please enter a valid 10-digit WhatsApp number.');
       return;
     }
-    if (!okEmail(email)) {
-      setErr('Please enter a valid email ID.');
+    if (!email.trim() || !okEmail(email.trim())) {
+      setErr('Please enter a valid email address.');
       return;
     }
     if (!city.trim()) {
       setErr('Please enter your city.');
       return;
     }
-    if (!pay) {
-      setErr('Please choose a payment option.');
+    if (!course) {
+      setErr('Please choose the accreditation you are applying for.');
       return;
     }
 
     setErr('');
+    setIsSubmitting(true);
 
-    // Submit inquiry to fg-api backend with subject including course name
-    await submitContactInquiry({
-      name: name.trim(),
-      email: email.trim(),
-      mobile: phone,
-      subject: `APPLY FOR CERTIFICATE EXAM: ${course}`,
-      message: `Certificate Exam Application: Course: ${course}, Fee: ${price}, Payment: ${pay}, City: ${city.trim()}`,
-      source: window.location.href,
-      details: {
-        certificate: course,
-        course: course,
-        fee: price,
-        paymentOption: pay,
+    const option = CERT_OPTIONS.find((c) => c.id === course);
+
+    let inquiryRes;
+    try {
+      inquiryRes = await submitContactInquiry({
+        name: name.trim(),
+        email: email.trim(),
+        mobile: phone,
+        subject: `APPLY FOR CERTIFICATE EXAM: ${option?.name || course}`,
+        message: [
+          'INPTA Accreditation Application',
+          `Accreditation: ${option?.name || course}`,
+          `Applicable fee (as published): ${option?.fee || ''}`,
+          `City: ${city.trim()}`,
+          'Note: Eligibility, approval and certification fees are as per INPTA. Application submission does not guarantee approval.',
+        ].join('\n'),
+        source: window.location.href,
+        details: {
+          accreditation: option?.name || course,
+          fee: option?.fee || '',
+          city: city.trim(),
+          course,
+        },
+      });
+
+      await sendTelemetry('certificate_application', {
+        accreditation: option?.name || course,
+        fee: option?.fee || '',
+        name: name.trim(),
+        phone,
+        email: email.trim(),
         city: city.trim(),
-      },
-    });
+      });
+    } catch (submitErr) {
+      console.error('[FGIIT] Certificate application failed:', submitErr);
+      setIsSubmitting(false);
+      setErr('We could not submit your application just now. Please try again or WhatsApp us.');
+      return;
+    }
 
-    await sendTelemetry('certificate_application', {
-      certificate: course,
-      fee: price,
-      name: name.trim(),
-      phone,
-      email: email.trim(),
-      city: city.trim(),
-      paymentOption: pay,
-    });
+    if (!inquiryRes?.success) {
+      setIsSubmitting(false);
+      setErr('We could not submit your application just now. Please try again or WhatsApp us.');
+      return;
+    }
+
+    setIsSubmitting(false);
     setDone(true);
   };
 
@@ -1144,23 +1206,16 @@ function ApplyExamModalContent({ initData, onClose }) {
               justifyContent: 'center',
             }}
           >
-            <svg
-              width="26"
-              height="26"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#4A630B"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4A630B" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M20 6 9 17l-5-5" />
             </svg>
           </span>
-          <h3 style={{ margin: 0, fontSize: '21px' }}>Application received</h3>
+          <span className="eyebrow" style={{ color: 'var(--deep)' }}>APPLICATION RECEIVED</span>
+          <h3 style={{ margin: 0, fontSize: '21px' }}>Your certificate application is with our team</h3>
           <p style={{ margin: 0, fontSize: '15px', lineHeight: 1.6, color: 'var(--muted)' }}>
-            Our team will connect with you within 24 hours with your exam date and payment details.
+            Thank you, {name.trim()}. We will contact you on WhatsApp and email within 24 hours with
+            the eligibility criteria, the approval process and the applicable fees for your
+            application.
           </p>
           <button type="button" className="btn btn-ghost" onClick={onClose}>
             Close
@@ -1168,16 +1223,15 @@ function ApplyExamModalContent({ initData, onClose }) {
         </div>
       ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <span className="eyebrow">APPLY FOR CERTIFICATE EXAM</span>
-          <h3 style={{ margin: 0, fontSize: '21px', paddingRight: '40px' }}>{course}</h3>
-          <span style={{ fontSize: '14px', color: 'var(--text2)' }}>
-            Fee: <b>{price}</b> ·{' '}
-            {kind === 'all'
-              ? 'EMI available'
-              : kind === 'big'
-              ? '2-part payment available'
-              : 'One-time fee'}
-          </span>
+          <span className="eyebrow">APPLY FOR YOUR CERTIFICATE</span>
+          <h3 style={{ margin: 0, fontSize: '21px', paddingRight: '40px' }}>
+            INPTA accreditation application
+          </h3>
+          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: 'var(--muted)' }}>
+            Accreditation and certification are separate from the ₹2,999 course fee. Your
+            application is reviewed by our team, and approval, eligibility and the applicable
+            certification fees are as per INPTA.
+          </p>
 
           <div className="fgrid">
             <label className="field">
@@ -1185,7 +1239,7 @@ function ApplyExamModalContent({ initData, onClose }) {
               <input
                 type="text"
                 autoComplete="name"
-                placeholder="As it should appear on certificate"
+                placeholder="As it should appear on the certificate"
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
@@ -1231,23 +1285,23 @@ function ApplyExamModalContent({ initData, onClose }) {
             </label>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <span className="lbl">Payment option</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <span className="lbl">Accreditation you are applying for</span>
             <div className="chips">
-              {payOptions.map((opt) => {
-                const active = pay === opt;
+              {CERT_OPTIONS.map((opt) => {
+                const active = course === opt.id;
                 return (
                   <button
-                    key={opt}
+                    key={opt.id}
                     type="button"
                     className={`chip${active ? ' on' : ''}`}
                     aria-pressed={active}
                     onClick={() => {
-                      setPay(opt);
+                      setCourse(opt.id);
                       if (err) setErr('');
                     }}
                   >
-                    {opt}
+                    {opt.name} · {opt.fee}
                   </button>
                 );
               })}
@@ -1262,10 +1316,11 @@ function ApplyExamModalContent({ initData, onClose }) {
 
           <button
             type="submit"
-            className="btn btn-green"
-            style={{ alignSelf: 'flex-start' }}
+            className="btn btn-lime"
+            disabled={isSubmitting}
+            style={{ alignSelf: 'flex-start', minHeight: '50px' }}
           >
-            Submit application
+            {isSubmitting ? 'Submitting...' : 'Submit application'}
           </button>
         </form>
       )}
@@ -1273,16 +1328,46 @@ function ApplyExamModalContent({ initData, onClose }) {
   );
 }
 
-/* ================= EMI MODAL ================= */
-function EmiModalContent({ onClose }) {
+/* ================= COURSE BROCHURE DOWNLOAD MODAL ================= */
+function BrochureModalContent({ onClose }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [age, setAge] = useState('');
-  const [prof, setProf] = useState('');
-  const [cibil, setCibil] = useState('');
+  const [address, setAddress] = useState('');
+  const [course, setCourse] = useState('');
   const [err, setErr] = useState('');
   const [done, setDone] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const options = [
+    ...COURSE_ORDER.map((id) => ({ id, name: COURSES[id].name })),
+    { id: 'nt', name: 'Nutri-Trainer Combo (all courses)' },
+  ];
+
+  const courseName = (options.find((o) => o.id === course) || {}).name || '';
+  const brochureFile = BROCHURE_FILES[course] || 'FGIIT_Course_Brochure.pdf';
+  const brochureHref = `/images/brochure/${brochureFile}`;
+
+  // Downloads the pre-generated brochure for the chosen course (falls back to
+  // building it in the browser if the static file is not available).
+  const deliverBrochure = async () => {
+    try {
+      const res = await fetch(brochureHref, { method: 'HEAD' });
+      if (res.ok) {
+        const link = document.createElement('a');
+        link.href = brochureHref;
+        link.download = brochureFile;
+        link.rel = 'noopener';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        return;
+      }
+    } catch (headErr) {
+      console.warn('[FGIIT] Brochure file not found, generating in browser:', headErr);
+    }
+    downloadCourseBrochurePDF(course);
+  };
 
   const handlePhoneChange = (e) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
@@ -1292,7 +1377,6 @@ function EmiModalContent({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const parsedAge = parseInt(age, 10);
     if (name.trim().length < 2) {
       setErr('Please enter your full name.');
       return;
@@ -1301,50 +1385,74 @@ function EmiModalContent({ onClose }) {
       setErr('Please enter a valid 10-digit WhatsApp number.');
       return;
     }
-    if (!okEmail(email)) {
-      setErr('Please enter a valid email ID.');
+    if (!email.trim() || !okEmail(email.trim())) {
+      setErr('Please enter a valid email address.');
       return;
     }
-    if (!(parsedAge >= 16 && parsedAge <= 80)) {
-      setErr('Please enter your age.');
+    if (address.trim().length < 5) {
+      setErr('Please enter your address.');
       return;
     }
-    if (!prof.trim()) {
-      setErr('Please enter your profession.');
-      return;
-    }
-    if (!cibil) {
-      setErr('Please choose your CIBIL score.');
+    if (!course) {
+      setErr('Please choose the course you are interested in.');
       return;
     }
 
     setErr('');
+    setIsSubmitting(true);
 
-    // Submit inquiry to fg-api backend with subject "EMI inquiry"
-    await submitContactInquiry({
-      name: name.trim(),
-      email: email.trim(),
-      mobile: phone,
-      subject: 'EMI inquiry',
-      message: `EMI Request for Nutri-Trainer ₹54,000 Plan: Age: ${parsedAge}, Profession: ${prof.trim()}, CIBIL: ${cibil}`,
-      source: window.location.href,
-      details: {
-        plan: 'Nutri-Trainer all certificates ₹54,000',
-        age: parsedAge,
-        profession: prof.trim(),
-        cibil,
-      },
-    });
+    // 1. Deliver the brochure to the candidate straight away (named after the chosen course)
+    try {
+      await deliverBrochure();
+    } catch (pdfErr) {
+      console.error('[FGIIT] Brochure download failed:', pdfErr);
+    }
 
-    await sendTelemetry('emi_request', {
-      name: name.trim(),
-      phone,
-      email: email.trim(),
-      age: parsedAge,
-      profession: prof.trim(),
-      cibil,
-      plan: 'Nutri-Trainer all certificates ₹54,000',
-    });
+    // 2. Log the enquiry as a lead (FGIIT > Contact Inquiries) and trigger the email
+    let inquiryRes;
+    try {
+      inquiryRes = await submitContactInquiry({
+        name: name.trim(),
+        email: email.trim(),
+        mobile: phone,
+        subject: `Course Brochure Download: ${courseName}`,
+        message: [
+          'Course Brochure Request',
+          `Course: ${courseName}`,
+          `Address: ${address.trim()}`,
+          `Brochure: FGIIT Job-Ready Batch course brochure (PDF) sent to the candidate.`,
+        ].join('\n'),
+        source: window.location.href,
+        details: {
+          leadType: 'course_brochure_download',
+          course: courseName,
+          courseId: course,
+          address: address.trim(),
+          brochureFileName: 'FGIIT_Job_Ready_Batch_Course_Brochure.pdf',
+        },
+      });
+
+      await sendTelemetry('brochure_lead', {
+        course: courseName,
+        name: name.trim(),
+        phone,
+        email: email.trim(),
+        address: address.trim(),
+      });
+    } catch (submitErr) {
+      console.error('[FGIIT] Brochure enquiry failed:', submitErr);
+      inquiryRes = { success: false };
+    }
+
+    setIsSubmitting(false);
+
+    if (!inquiryRes?.success) {
+      setErr(
+        'Your brochure is downloading, but we could not save your details just now. Please WhatsApp us on +91 88668 42520 so we can send it and follow up.',
+      );
+      return;
+    }
+
     setDone(true);
   };
 
@@ -1363,37 +1471,42 @@ function EmiModalContent({ onClose }) {
               justifyContent: 'center',
             }}
           >
-            <svg
-              width="26"
-              height="26"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#4A630B"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4A630B" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M20 6 9 17l-5-5" />
             </svg>
           </span>
-          <h3 style={{ margin: 0, fontSize: '21px' }}>Thank you!</h3>
+          <span className="eyebrow" style={{ color: 'var(--deep)' }}>BROCHURE ON ITS WAY</span>
+          <h3 style={{ margin: 0, fontSize: '21px' }}>Thanks, {name.trim()} — your brochure is downloading</h3>
           <p style={{ margin: 0, fontSize: '15px', lineHeight: 1.6, color: 'var(--muted)' }}>
-            Our team will connect with you within 24 hours to help you get certified as early as possible.
+            We have sent the complete course brochure to your email as well, and our team will
+            contact you on WhatsApp within 24 hours about {courseName}.
           </p>
-          <button type="button" className="btn btn-ghost" onClick={onClose}>
-            Close
-          </button>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <a
+              className="btn btn-lime"
+              href={brochureHref}
+              download={brochureFile}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ minHeight: '48px' }}
+            >
+              Download the brochure again
+            </a>
+            <button type="button" className="btn btn-ghost" onClick={onClose}>
+              Close
+            </button>
+          </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <span className="eyebrow">EMI OPTIONS · NUTRI-TRAINER CERTIFICATES</span>
+          <span className="eyebrow">DOWNLOAD THE COMPLETE COURSE BROCHURE</span>
           <h3 style={{ margin: 0, fontSize: '21px', paddingRight: '40px' }}>
-            Up to 12 EMIs, 0% interest, 0% down payment
+            Tell us where to send it
           </h3>
-          <span style={{ fontSize: '14px', color: 'var(--text2)' }}>
-            ₹54,000 from about <b>₹4,500 a month</b> for 12 months.
-          </span>
+          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: 'var(--muted)' }}>
+            The brochure lists every course with its duration, fee and full syllabus. It downloads
+            straight to your device, and we also email it to you.
+          </p>
 
           <div className="fgrid">
             <label className="field">
@@ -1410,7 +1523,7 @@ function EmiModalContent({ onClose }) {
               />
             </label>
             <label className="field">
-              WhatsApp number
+              Contact number
               <input
                 type="tel"
                 inputMode="numeric"
@@ -1434,55 +1547,37 @@ function EmiModalContent({ onClose }) {
               />
             </label>
             <label className="field">
-              Age
-              <input
-                type="number"
-                inputMode="numeric"
-                placeholder="Years"
-                value={age}
-                onChange={(e) => {
-                  setAge(e.target.value);
-                  if (err) setErr('');
-                }}
-              />
-            </label>
-            <label className="field">
-              Profession
+              Address
               <input
                 type="text"
-                placeholder="e.g. Gym trainer, Student"
-                value={prof}
+                autoComplete="street-address"
+                placeholder="City, State"
+                value={address}
                 onChange={(e) => {
-                  setProf(e.target.value);
+                  setAddress(e.target.value);
                   if (err) setErr('');
                 }}
               />
             </label>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <span className="lbl">Your CIBIL score</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <span className="lbl">Course you are interested in</span>
             <div className="chips">
-              {[
-                '750+',
-                '700+',
-                'Less than 700',
-                'Low CIBIL (past bounced EMI)',
-                'Don’t know',
-              ].map((c) => {
-                const active = cibil === c;
+              {options.map((opt) => {
+                const active = course === opt.id;
                 return (
                   <button
-                    key={c}
+                    key={opt.id}
                     type="button"
                     className={`chip${active ? ' on' : ''}`}
                     aria-pressed={active}
                     onClick={() => {
-                      setCibil(c);
+                      setCourse(opt.id);
                       if (err) setErr('');
                     }}
                   >
-                    {c}
+                    {opt.name}
                   </button>
                 );
               })}
@@ -1497,10 +1592,11 @@ function EmiModalContent({ onClose }) {
 
           <button
             type="submit"
-            className="btn btn-green"
-            style={{ alignSelf: 'flex-start' }}
+            className="btn btn-lime"
+            disabled={isSubmitting}
+            style={{ alignSelf: 'flex-start', minHeight: '50px' }}
           >
-            Submit
+            {isSubmitting ? 'Preparing your brochure...' : 'Download the Course Brochure'}
           </button>
         </form>
       )}

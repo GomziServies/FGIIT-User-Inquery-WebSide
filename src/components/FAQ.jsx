@@ -3,23 +3,13 @@ import { FAQS } from '../data/fgiitData';
 
 export default function FAQ() {
   return (
-    <section
-      className="wrap"
-      style={{
-        maxWidth: '820px',
-        paddingTop: '52px',
-        paddingBottom: '40px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-      }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', textAlign: 'center' }}>
-        <span className="eyebrow">QUESTIONS</span>
-        <h2 className="h2">Frequently asked</h2>
+    <section id="faq" className="wrap section section--flush-bottom">
+      <div className="head head-center">
+        <span className="eyebrow">Questions</span>
+        <h2>Frequently asked</h2>
       </div>
 
-      <div>
+      <div style={{ maxWidth: '760px', width: '100%', margin: '0 auto' }}>
         {FAQS.map((faq, idx) => (
           <details key={idx}>
             <summary>{faq.q}</summary>

@@ -1,52 +1,36 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { GALLERY } from '../data/fgiitData';
+import useAutoScroll from '../hooks/useAutoScroll';
 
 export default function PracticalClasses() {
+  const galleryRef = useRef(null);
+  useAutoScroll(galleryRef, { interval: 4200 });
+
   return (
-    <section
-      className="wrap"
-      style={{
-        paddingTop: '28px',
-        paddingBottom: '8px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '14px',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px' }}>
-        <h3 style={{ margin: 0, fontSize: '17px' }}>Inside our practical classes</h3>
-        <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Swipe →</span>
+    <section className="wrap section section--tight section--flush-bottom">
+      <div className="head">
+        <span className="eyebrow">Practical classes</span>
+        <h2 className="h2" style={{ fontSize: 'clamp(22px, 2.6vw, 30px)' }}>
+          Inside our practical classes
+        </h2>
       </div>
+
       <div
-        className="carousel"
+        className="carousel carousel--4"
         id="gallery"
+        ref={galleryRef}
         role="region"
         aria-label="Photos from FGIIT practical classes"
       >
-        {GALLERY.map((item, idx) => (
-          <figure
-            key={idx}
-            style={{
-              margin: 0,
-              width: '260px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-            }}
-          >
+        {GALLERY.map((item) => (
+          <figure key={item.file} style={{ margin: 0 }}>
             <img
+              className="carousel-img"
               src={`/images/${item.file}`}
               alt={item.caption}
               loading="lazy"
-              style={{
-                width: '260px',
-                height: '300px',
-                objectFit: 'cover',
-                borderRadius: '16px',
-                display: 'block',
-              }}
             />
-            <figcaption style={{ fontSize: '13px', color: 'var(--muted)' }}>
+            <figcaption style={{ marginTop: '10px', fontSize: '13px', color: 'var(--muted)' }}>
               {item.caption}
             </figcaption>
           </figure>

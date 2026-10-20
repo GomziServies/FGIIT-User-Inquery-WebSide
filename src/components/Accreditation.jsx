@@ -1,8 +1,15 @@
 import React from 'react';
 
+const MARKS = [
+  { label: 'INPTA accredited' },
+  { label: 'IPTNA member' },
+  { label: 'ISO 9001:2015 certified' },
+  { label: 'Certificates with UIN & QR verification' },
+];
+
 export default function Accreditation() {
   return (
-    <section style={{ borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
+    <section style={{ background: 'var(--bg2)' }}>
       <div
         className="wrap"
         style={{
@@ -18,18 +25,21 @@ export default function Accreditation() {
           textAlign: 'center',
         }}
       >
-        <span>
-          <b style={{ color: 'var(--ink)' }}>INPTA</b> accredited
-        </span>
-        <span>
-          <b style={{ color: 'var(--ink)' }}>IPTNA</b> member
-        </span>
-        <span>
-          <b style={{ color: 'var(--ink)' }}>ISO 9001:2015</b> certified
-        </span>
-        <span>
-          Certificates with <b style={{ color: 'var(--ink)' }}>UIN &amp; QR</b> verification
-        </span>
+        {MARKS.map((mark, idx) => (
+          <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span
+              aria-hidden="true"
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: 'var(--lime)',
+                display: 'inline-block',
+              }}
+            />
+            <b style={{ color: 'var(--ink)', fontWeight: 600 }}>{mark.label}</b>
+          </span>
+        ))}
       </div>
     </section>
   );
