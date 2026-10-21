@@ -21,12 +21,12 @@ export default function Curriculum({ onOpenBrochure }) {
         ))}
       </div>
 
-      <div>
+      <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '16px' }}>
         <button
           type="button"
           className="btn btn-green"
           onClick={onOpenBrochure}
-          style={{ minHeight: '52px' }}
+          style={{ minHeight: '54px', padding: '0 32px' }}
         >
           <Icon name="download" size={18} />
           Download the Complete Course Brochure

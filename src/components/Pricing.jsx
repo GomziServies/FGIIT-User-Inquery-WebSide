@@ -19,18 +19,136 @@ export default function Pricing({ onOpenDemo }) {
         style={{
           display: 'flex',
           flexWrap: 'wrap',
-          gap: 'clamp(24px, 4vw, 56px)',
-          alignItems: 'flex-start',
+          gap: 'clamp(24px, 4vw, 44px)',
+          alignItems: 'stretch',
         }}
       >
-        <div className="price-block" style={{ flex: '0 1 260px', minWidth: 0 }}>
-          <div className="surface" style={{ padding: 'clamp(20px, 3vw, 28px)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <span className="price-tag">₹2,999</span>
-              <span className="price-note">Course fee · one eligible course</span>
+        {/* Featured All-Inclusive Pass Card */}
+        <div className="price-block" style={{ flex: '1 1 340px', minWidth: 0 }}>
+          <div
+            style={{
+              background: 'linear-gradient(180deg, #FFFFFF 0%, #F9FCF2 100%)',
+              border: '2px solid var(--lime)',
+              borderRadius: 'var(--r-xl)',
+              padding: 'clamp(24px, 3.5vw, 36px)',
+              boxShadow: '0 16px 40px -10px rgba(155, 192, 40, 0.18)',
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+              justifyContent: 'space-between',
+              gap: '20px',
+              position: 'relative',
+            }}
+          >
+            {/* Top Popular Pill */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  letterSpacing: '.06em',
+                  textTransform: 'uppercase',
+                  padding: '5px 12px',
+                  borderRadius: '999px',
+                  background: 'var(--lime)',
+                  color: 'var(--ink)',
+                }}
+              >
+                ★ All-Inclusive Access
+              </span>
+              <span
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  color: 'var(--deep)',
+                  background: 'var(--tint2)',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                }}
+              >
+                Save 80%
+              </span>
             </div>
-            <div className="btn-row" style={{ marginTop: '20px' }}>
-              <a className="btn btn-lime" href="#courses" style={{ minHeight: '52px' }}>
+
+            {/* Price display with strikethrough comparison */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
+                <span className="price-tag">₹2,999</span>
+                <span
+                  style={{
+                    fontSize: '18px',
+                    color: 'var(--muted)',
+                    textDecoration: 'line-through',
+                    fontWeight: 600,
+                  }}
+                >
+                  ₹14,999
+                </span>
+              </div>
+              <span className="price-note">
+                One-time complete fee · No hidden charges · Any 1 course
+              </span>
+            </div>
+
+            {/* Value Deliverables Checklist */}
+            <ul
+              style={{
+                listStyle: 'none',
+                margin: 0,
+                padding: '12px 0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                borderTop: '1px solid #E1ECE5',
+                borderBottom: '1px solid #E1ECE5',
+              }}
+            >
+              {[
+                'Full 6-Month Diploma Online Course',
+                'Daily Live Interactive Video Classes',
+                'FGIIT Academy App (Lifetime Revision)',
+                'Digital E-Books & Study Material PDF',
+                '100% Job Placement Assistance',
+              ].map((item, idx) => (
+                <li
+                  key={idx}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    fontSize: '13.5px',
+                    color: 'var(--text2)',
+                    fontWeight: 500,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      background: 'var(--lime)',
+                      color: 'var(--ink)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      flex: 'none',
+                    }}
+                  >
+                    ✓
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="btn-row" style={{ marginTop: 'auto', gap: '10px' }}>
+              <a
+                className="btn btn-lime"
+                href="#courses"
+                style={{ minHeight: '52px', flex: '1 1 180px' }}
+              >
                 Enroll Now – ₹2,999
               </a>
               <button
@@ -39,18 +157,19 @@ export default function Pricing({ onOpenDemo }) {
                 onClick={onOpenDemo}
                 style={{ minHeight: '52px' }}
               >
-                Join a Free Demo Class
+                Free Demo
               </button>
             </div>
           </div>
         </div>
 
+        {/* 4 Pillars of Learning Bento Grid */}
         <div
           style={{
-            flex: '1 1 520px',
+            flex: '1 1 500px',
             minWidth: 0,
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
             gap: '16px',
           }}
         >
@@ -58,19 +177,21 @@ export default function Pricing({ onOpenDemo }) {
             <div
               key={item.id}
               style={{
-                background: '#fff',
+                background: '#FFFFFF',
                 border: '1px solid var(--line)',
                 borderRadius: 'var(--r-lg)',
-                padding: '22px',
+                padding: '24px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px',
+                gap: '12px',
+                boxShadow: '0 2px 10px rgba(11, 18, 16, 0.03)',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
               }}
             >
               <span
                 style={{
-                  width: '44px',
-                  height: '44px',
+                  width: '46px',
+                  height: '46px',
                   borderRadius: '14px',
                   background: 'var(--tint)',
                   color: 'var(--deep)',
@@ -79,10 +200,17 @@ export default function Pricing({ onOpenDemo }) {
                   justifyContent: 'center',
                 }}
               >
-                <Icon name={item.icon} />
+                <Icon name={item.icon} size={22} />
               </span>
-              <h3 style={{ margin: 0, fontSize: '16px', lineHeight: 1.35 }}>{item.title}</h3>
-              <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.55, color: 'var(--muted)' }}>
+              <h3 style={{ margin: 0, fontSize: '16.5px', lineHeight: 1.35 }}>{item.title}</h3>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: '13.5px',
+                  lineHeight: 1.55,
+                  color: 'var(--muted)',
+                }}
+              >
                 {item.desc}
               </p>
             </div>

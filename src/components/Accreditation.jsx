@@ -1,46 +1,81 @@
 import React from 'react';
 
-const MARKS = [
-  { label: 'INPTA accredited' },
-  { label: 'IPTNA member' },
-  { label: 'ISO 9001:2015 certified' },
-  { label: 'Certificates with UIN & QR verification' },
+const ACCREDITATIONS = [
+  {
+    icon: '🛡️',
+    title: 'INPTA Accredited',
+    subtitle: 'Indian Nutritionist Personal Trainer Accreditation',
+  },
+  {
+    icon: '🏛️',
+    title: 'IPTNA Member',
+    subtitle: 'International Professional Network',
+  },
+  {
+    icon: '🏅',
+    title: 'ISO 9001:2015',
+    subtitle: 'Certified Quality Education',
+  },
+  {
+    icon: '🔒',
+    title: 'UIN & QR Verified',
+    subtitle: 'Tamper-Proof Online Verification',
+  },
 ];
 
 export default function Accreditation() {
   return (
-    <section style={{ background: 'var(--bg2)' }}>
+    <section
+      style={{
+        background: '#FFFFFF',
+        borderTop: '1px solid var(--line)',
+        borderBottom: '1px solid var(--line)',
+        padding: '16px 0',
+      }}
+    >
       <div
         className="wrap"
         style={{
-          paddingTop: '18px',
-          paddingBottom: '18px',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '10px 28px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gap: '16px',
           alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '13px',
-          color: 'var(--muted)',
-          textAlign: 'center',
         }}
       >
-        {MARKS.map((mark, idx) => (
-          <span key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <span
-              aria-hidden="true"
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: 'var(--lime)',
-                display: 'inline-block',
-              }}
-            />
-            <b style={{ color: 'var(--ink)', fontWeight: 600 }}>{mark.label}</b>
-          </span>
+        {ACCREDITATIONS.map((item, idx) => (
+          <div
+            key={idx}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '10px 16px',
+              borderRadius: '14px',
+              background: 'var(--bg2)',
+              border: '1px solid #EAF0EC',
+              transition: 'transform 0.2s ease, border-color 0.2s ease',
+            }}
+          >
+            <span style={{ fontSize: '22px', flex: 'none', lineHeight: 1 }}>{item.icon}</span>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span
+                style={{
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  color: 'var(--ink)',
+                  fontFamily: 'var(--font-heading)',
+                }}
+              >
+                {item.title}
+              </span>
+              <span style={{ fontSize: '11.5px', color: 'var(--muted)', lineHeight: 1.3 }}>
+                {item.subtitle}
+              </span>
+            </div>
+          </div>
         ))}
       </div>
     </section>
   );
 }
+
