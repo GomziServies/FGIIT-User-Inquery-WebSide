@@ -35,9 +35,9 @@ export default function Header({ onOpenDemo }) {
             width="42"
             height="42"
           />
-          <span className="serif" style={{ fontSize: '20px' }}>
+          {/* <span className="serif" style={{ fontSize: '20px' }}>
             FGIIT
-          </span>
+          </span> */}
         </a>
 
         <nav className={`nav-links${open ? ' open' : ''}`} aria-label="Main">
