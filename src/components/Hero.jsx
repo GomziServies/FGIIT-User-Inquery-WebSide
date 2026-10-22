@@ -24,6 +24,30 @@ export default function Hero({ onOpenDemo }) {
             alignItems: 'flex-start',
           }}
         >
+          {/* Eyebrow Status Badge */}
+          <a
+            href="#price"
+            className="hero-badge-pill"
+            aria-label="Batch 2026 Admitting Now - 100% Placement Support Guarantee"
+          >
+            <span className="pulse-dot" aria-hidden="true" />
+            <span>BATCH 2026 ADMITTING NOW · 100% PLACEMENT SUPPORT GUARANTEE</span>
+            <span className="hero-badge-arrow" aria-hidden="true">
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </span>
+          </a>
+
           {/* High-Impact Display Headline */}
           <h1
             style={{

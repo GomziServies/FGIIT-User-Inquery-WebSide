@@ -16,12 +16,11 @@ export default function Curriculum({ onOpenBrochure }) {
             <span className="journey-dot" aria-hidden="true" />
             <span className="journey-num">{stage.num}</span>
             <h3 className="journey-title">{stage.title}</h3>
-            <p className="journey-desc">{stage.desc}</p>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 'clamp(28px, 3.5vw, 44px)' }}>
         <button
           type="button"
           className="btn btn-green"

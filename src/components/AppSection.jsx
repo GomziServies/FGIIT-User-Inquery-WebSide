@@ -73,13 +73,7 @@ export default function AppSection() {
           <h2>Learn Anytime, Anywhere with the FGIIT Academy App</h2>
         </div>
 
-        <div
-          className="btn-row"
-          style={{
-            justifyContent: 'center',
-            marginBottom: 'clamp(36px, 4vw, 52px)',
-          }}
-        >
+        <div className="btn-row app-btn-row">
           <a
             className="btn btn-lime"
             href={CONFIG.APP_PLAY_URL}
@@ -102,6 +96,104 @@ export default function AppSection() {
           </a>
         </div>
 
+        {/* Embedded scoped styles to guarantee zero mobile whitespace regardless of browser cache */}
+        <style>{`
+          #app .app-showcase-grid {
+            display: grid !important;
+            grid-template-columns: 1.12fr 0.88fr !important;
+            align-items: center !important;
+            gap: clamp(24px, 3.5vw, 48px) !important;
+            max-width: 1140px !important;
+            margin: 28px auto 0 !important;
+            width: 100% !important;
+          }
+          #app .app-showcase-phones {
+            width: 100% !important;
+            max-width: 540px !important;
+            margin: 0 auto !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            height: auto !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+          }
+          #app .app-mockup-img {
+            width: 100% !important;
+            max-width: 540px !important;
+            height: auto !important;
+            display: block !important;
+            margin: 0 auto !important;
+            aspect-ratio: 1024 / 682 !important;
+            object-fit: contain !important;
+            filter: drop-shadow(0 16px 32px rgba(11, 18, 16, 0.08)) !important;
+          }
+          #app .app-features-card-wrapper {
+            width: 100% !important;
+            max-width: 440px !important;
+            margin: 0 auto !important;
+            position: relative !important;
+            padding-top: 14px !important;
+            box-sizing: border-box !important;
+            height: auto !important;
+            min-height: 0 !important;
+          }
+          @media (max-width: 900px) {
+            #app .app-showcase-grid {
+              display: flex !important;
+              flex-direction: column !important;
+              align-items: center !important;
+              gap: 8px !important;
+              margin: 12px auto 0 !important;
+              width: 100% !important;
+            }
+            #app .app-showcase-phones {
+              max-width: 340px !important;
+              line-height: 0 !important;
+              margin: 0 auto !important;
+            }
+            #app .app-mockup-img {
+              max-width: 340px !important;
+              display: block !important;
+              filter: drop-shadow(0 8px 18px rgba(11, 18, 16, 0.08)) !important;
+            }
+            #app .app-features-card-wrapper {
+              max-width: 420px !important;
+              margin: 6px auto 0 !important;
+              padding-top: 10px !important;
+              position: relative !important;
+            }
+          }
+          @media (max-width: 560px) {
+            #app .app-showcase-grid {
+              gap: 4px !important;
+              margin: 8px auto 0 !important;
+            }
+            #app .app-showcase-phones {
+              max-width: 300px !important;
+            }
+            #app .app-mockup-img {
+              max-width: 300px !important;
+              filter: drop-shadow(0 6px 14px rgba(11, 18, 16, 0.07)) !important;
+            }
+            #app .app-features-card-wrapper {
+              max-width: 100% !important;
+              margin: 4px auto 0 !important;
+              padding-top: 8px !important;
+            }
+            #app .app-features-badge {
+              left: 16px !important;
+              top: -2px !important;
+              font-size: 13px !important;
+              padding: 5px 14px !important;
+            }
+            #app .app-features-card {
+              padding: 20px 14px 14px 14px !important;
+              border-radius: 18px !important;
+            }
+          }
+        `}</style>
+
         {/* 2-Column Responsive Layout: Mockup Phones on Left + App Features Card on Right */}
         <div className="app-showcase-grid">
           {/* Left Column: 3 iPhones */}
@@ -110,7 +202,8 @@ export default function AppSection() {
               src="/images/app/fgiit-app-preview.png"
               alt="FGIIT Academy App on Mobile Devices — My Learning, Curriculum, and Certified Students"
               className="app-mockup-img"
-              loading="lazy"
+              width="1024"
+              height="682"
             />
           </div>
 
