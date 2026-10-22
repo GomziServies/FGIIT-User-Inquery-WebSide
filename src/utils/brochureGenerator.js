@@ -215,12 +215,12 @@ export function generateCourseBrochurePDF(courseId) {
   // ---- Learning journey -------------------------------------------------
   sectionTitle('YOUR LEARNING JOURNEY');
   const stages = [
-    ['Month 1', 'Foundations of the Human Body'],
+    ['Month 1', 'Human Body Basics'],
     ['Month 2', 'Exercise & Training Science'],
-    ['Month 3', 'Nutrition Fundamentals'],
+    ['Month 3', 'Sports Nutrition Fundamentals'],
     ['Month 4', 'Fitness Assessment & Program Design'],
     ['Month 5', 'Practical Coaching Skills'],
-    ['Month 6', 'Career Preparation & Client Handling'],
+    ['Month 6', 'Career Readiness & Client Management'],
   ];
   stages.forEach(([m, t]) => {
     addPageIfNeeded(7);

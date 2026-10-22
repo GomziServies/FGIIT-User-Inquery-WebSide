@@ -24,24 +24,20 @@ export default function Hero({ onOpenDemo }) {
             alignItems: 'flex-start',
           }}
         >
-          {/* Live Batch Status Chip */}
-          <div className="hero-badge-pill">
-            <span className="pulse-dot" />
-            <span>Batch 2026 Admitting Now · 100% Placement Guarantee</span>
-          </div>
-
           {/* High-Impact Display Headline */}
           <h1
             style={{
               margin: 0,
-              fontSize: 'clamp(36px, 5.2vw, 56px)',
-              lineHeight: 1.1,
-              letterSpacing: '-0.03em',
+              fontSize: 'clamp(28px, 3.8vw, 44px)',
+              lineHeight: 1.15,
+              letterSpacing: '-0.025em',
               color: 'var(--ink)',
             }}
           >
             Launch Your Fitness Career with Our{' '}
-            <span style={{ color: 'var(--deep)' }}>Job-Ready Batch</span>
+            <span style={{ color: 'var(--deep)', whiteSpace: 'nowrap' }}>
+              Job&#8209;Ready Batch
+            </span>
           </h1>
 
           {/* Balanced Subtitle */}
@@ -58,22 +54,6 @@ export default function Hero({ onOpenDemo }) {
             Six-Month Diploma Online Courses with live interactive training, sports nutrition,
             rehabilitation, and guaranteed placement with leading fitness chains across India.
           </p>
-
-          {/* Bento Value Chips — Scannable, Zero Clutter */}
-          <div className="hero-pills">
-            <div className="hero-pill-item">
-              <span style={{ color: 'var(--deep)', fontSize: '15px' }}>🎓</span>
-              <span>Class 10th / 12th &amp; Trainers</span>
-            </div>
-            <div className="hero-pill-item">
-              <span style={{ color: 'var(--deep)', fontSize: '15px' }}>📲</span>
-              <span>Live Classes + Academy App</span>
-            </div>
-            <div className="hero-pill-item">
-              <span style={{ color: 'var(--deep)', fontSize: '15px' }}>💼</span>
-              <span>100% Job Placement</span>
-            </div>
-          </div>
 
           {/* Clear Primary & Secondary CTAs */}
           <div className="btn-row" style={{ alignItems: 'center', gap: '14px', paddingTop: '4px' }}>
@@ -108,7 +88,7 @@ export default function Hero({ onOpenDemo }) {
               gap: '6px',
             }}
           >
-            <span>🎯 Discover Your Trainer Level in 4 mins (Free Assessment)</span>
+            <span>Discover Your Trainer Level in 4 mins (Free Assessment)</span>
             <span aria-hidden="true">→</span>
           </a>
 
@@ -132,13 +112,14 @@ export default function Hero({ onOpenDemo }) {
         {/* Visual Anchor Column with Floating Glass Badges */}
         <div style={{ flex: '1 1 380px', minWidth: 0, position: 'relative' }}>
           <img
-            src="/images/hybrid-portrait.jpg"
-            alt="FGIIT faculty teaching an offline class while online students join live on screen"
+            src="/images/hybrid-wide.jpg"
+            alt="FGIIT classroom batch learning live with faculty and online Zoom attendees"
             style={{
               width: '100%',
               maxHeight: '580px',
               aspectRatio: '4/5',
               objectFit: 'cover',
+              objectPosition: 'center 32%',
               borderRadius: '28px',
               display: 'block',
               boxShadow: '0 24px 60px -16px rgba(11, 18, 16, 0.16)',

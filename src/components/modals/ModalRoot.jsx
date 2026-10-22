@@ -9,11 +9,9 @@ import {
   okPhone,
   okEmail,
   sendTelemetry,
-  submitContactInquiry,
+  dispatchInquiryInBackground,
   getDemoDays,
 } from '../../data/fgiitData';
-import { downloadCoachReportPDF } from '../../utils/pdfGenerator';
-import { downloadCourseBrochurePDF } from '../../utils/brochureGenerator';
 
 export default function ModalRoot({ modalState, onClose }) {
   const { type, data } = modalState;
@@ -333,12 +331,14 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
     }
 
     setErr('');
-    setIsSubmitting(true);
 
-    let inquiryRes;
-    try {
-      // 1. Submit contact inquiry to fg-api backend with 24h SLA and notification metadata
-      inquiryRes = await submitContactInquiry({
+    // Instant UI transition - zero latency for user
+    setDone(true);
+    setIsSubmitting(false);
+
+    // Background delivery of inquiry & email notification
+    dispatchInquiryInBackground(
+      {
         name: name.trim(),
         email: email.trim(),
         mobile: phone,
@@ -360,34 +360,21 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
           clientEmail: email.trim(),
           submittedAt: new Date().toISOString(),
         },
-      });
-
-      console.info('[FGIIT] Purchase inquiry submitted:', inquiryRes);
-
-      // 2. Telemetry tracking
-      await sendTelemetry('course_purchase_lead', {
-        courseId,
-        courseName,
-        price,
-        name: name.trim(),
-        phone,
-        email: email.trim(),
-      });
-    } catch (submitErr) {
-      console.error('[FGIIT] Purchase inquiry failed:', submitErr);
-      inquiryRes = { success: false };
-    }
-
-    setIsSubmitting(false);
-
-    if (!inquiryRes?.success) {
-      setErr(
-        'We could not save your request just now. Please try again, or message us on WhatsApp and we will enrol you manually.',
-      );
-      return;
-    }
-
-    setDone(true);
+      },
+      {
+        telemetry: {
+          type: 'course_purchase_lead',
+          data: {
+            courseId,
+            courseName,
+            price,
+            name: name.trim(),
+            phone,
+            email: email.trim(),
+          },
+        },
+      }
+    );
   };
 
   return (
@@ -847,39 +834,39 @@ function DemoModalContent({ onClose }) {
 
     setErr('');
 
-    // Submit inquiry to fg-api backend with subject "Demo Class"
-    const inquiryRes = await submitContactInquiry({
-      name: name.trim(),
-      email: email.trim(),
-      mobile: phone,
-      subject: 'Demo Class',
-      message: `Free Demo Class Registration: Email: ${email.trim()}, Type: ${mode === 'rec' ? 'Pre-recorded video' : 'Live real-time class'}${day ? `, Day: ${day}` : ''}${slot ? `, Slot: ${slot}` : ''}`,
-      source: window.location.href,
-      details: {
-        email: email.trim(),
-        demoType: mode === 'rec' ? 'Pre-recorded video' : 'Live class',
-        day: day || '',
-        slot: slot || '',
-      },
-    });
-
-    await sendTelemetry('demo_class', {
-      name: name.trim(),
-      phone,
-      email: email.trim(),
-      demoType: mode === 'rec' ? 'Pre-recorded video' : 'Live class',
-      day: day || '',
-      slot: slot || '',
-    });
-
-    if (!inquiryRes?.success) {
-      setErr(
-        'We could not book your class just now. Please try again, or message us on WhatsApp and we will book your seat.',
-      );
-      return;
-    }
-
+    // Instant UI transition - zero latency for user
     setDone(true);
+
+    // Background delivery of inquiry & email notification
+    dispatchInquiryInBackground(
+      {
+        name: name.trim(),
+        email: email.trim(),
+        mobile: phone,
+        subject: 'Demo Class',
+        message: `Free Demo Class Registration: Email: ${email.trim()}, Type: ${mode === 'rec' ? 'Pre-recorded video' : 'Live real-time class'}${day ? `, Day: ${day}` : ''}${slot ? `, Slot: ${slot}` : ''}`,
+        source: window.location.href,
+        details: {
+          email: email.trim(),
+          demoType: mode === 'rec' ? 'Pre-recorded video' : 'Live class',
+          day: day || '',
+          slot: slot || '',
+        },
+      },
+      {
+        telemetry: {
+          type: 'demo_class',
+          data: {
+            name: name.trim(),
+            phone,
+            email: email.trim(),
+            demoType: mode === 'rec' ? 'Pre-recorded video' : 'Live class',
+            day: day || '',
+            slot: slot || '',
+          },
+        },
+      }
+    );
   };
 
   return (
@@ -1139,13 +1126,14 @@ function CertificateApplyModalContent({ onClose }) {
     }
 
     setErr('');
-    setIsSubmitting(true);
 
-    const option = CERT_OPTIONS.find((c) => c.id === course);
+    // Instant UI transition - zero latency for user
+    setDone(true);
+    setIsSubmitting(false);
 
-    let inquiryRes;
-    try {
-      inquiryRes = await submitContactInquiry({
+    // Background delivery of inquiry & email notification
+    dispatchInquiryInBackground(
+      {
         name: name.trim(),
         email: email.trim(),
         mobile: phone,
@@ -1164,31 +1152,21 @@ function CertificateApplyModalContent({ onClose }) {
           city: city.trim(),
           course,
         },
-      });
-
-      await sendTelemetry('certificate_application', {
-        accreditation: option?.name || course,
-        fee: option?.fee || '',
-        name: name.trim(),
-        phone,
-        email: email.trim(),
-        city: city.trim(),
-      });
-    } catch (submitErr) {
-      console.error('[FGIIT] Certificate application failed:', submitErr);
-      setIsSubmitting(false);
-      setErr('We could not submit your application just now. Please try again or WhatsApp us.');
-      return;
-    }
-
-    if (!inquiryRes?.success) {
-      setIsSubmitting(false);
-      setErr('We could not submit your application just now. Please try again or WhatsApp us.');
-      return;
-    }
-
-    setIsSubmitting(false);
-    setDone(true);
+      },
+      {
+        telemetry: {
+          type: 'certificate_application',
+          data: {
+            accreditation: option?.name || course,
+            fee: option?.fee || '',
+            name: name.trim(),
+            phone,
+            email: email.trim(),
+            city: city.trim(),
+          },
+        },
+      }
+    );
   };
 
   return (
@@ -1366,7 +1344,12 @@ function BrochureModalContent({ onClose }) {
     } catch (headErr) {
       console.warn('[FGIIT] Brochure file not found, generating in browser:', headErr);
     }
-    downloadCourseBrochurePDF(course);
+    try {
+      const { downloadCourseBrochurePDF } = await import('../../utils/brochureGenerator');
+      downloadCourseBrochurePDF(course);
+    } catch (genErr) {
+      console.warn('[FGIIT] Fallback brochure generation error:', genErr);
+    }
   };
 
   const handlePhoneChange = (e) => {
@@ -1399,19 +1382,19 @@ function BrochureModalContent({ onClose }) {
     }
 
     setErr('');
-    setIsSubmitting(true);
 
-    // 1. Deliver the brochure to the candidate straight away (named after the chosen course)
-    try {
-      await deliverBrochure();
-    } catch (pdfErr) {
+    // Deliver brochure immediately to user
+    deliverBrochure().catch((pdfErr) => {
       console.error('[FGIIT] Brochure download failed:', pdfErr);
-    }
+    });
 
-    // 2. Log the enquiry as a lead (FGIIT > Contact Inquiries) and trigger the email
-    let inquiryRes;
-    try {
-      inquiryRes = await submitContactInquiry({
+    // Instant UI transition - zero latency for user
+    setDone(true);
+    setIsSubmitting(false);
+
+    // Background delivery of inquiry & email notification
+    dispatchInquiryInBackground(
+      {
         name: name.trim(),
         email: email.trim(),
         mobile: phone,
@@ -1430,30 +1413,20 @@ function BrochureModalContent({ onClose }) {
           address: address.trim(),
           brochureFileName: 'FGIIT_Job_Ready_Batch_Course_Brochure.pdf',
         },
-      });
-
-      await sendTelemetry('brochure_lead', {
-        course: courseName,
-        name: name.trim(),
-        phone,
-        email: email.trim(),
-        address: address.trim(),
-      });
-    } catch (submitErr) {
-      console.error('[FGIIT] Brochure enquiry failed:', submitErr);
-      inquiryRes = { success: false };
-    }
-
-    setIsSubmitting(false);
-
-    if (!inquiryRes?.success) {
-      setErr(
-        'Your brochure is downloading, but we could not save your details just now. Please WhatsApp us on +91 88668 42520 so we can send it and follow up.',
-      );
-      return;
-    }
-
-    setDone(true);
+      },
+      {
+        telemetry: {
+          type: 'brochure_lead',
+          data: {
+            course: courseName,
+            name: name.trim(),
+            phone,
+            email: email.trim(),
+            address: address.trim(),
+          },
+        },
+      }
+    );
   };
 
   return (

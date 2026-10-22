@@ -3,7 +3,7 @@ export const CONFIG = {
   WHATSAPP: import.meta.env?.VITE_WHATSAPP_NUMBER || '918866842520',
   PHONE_DISPLAY: import.meta.env?.VITE_PHONE_DISPLAY || '+91 88668 42520',
   API_URL: import.meta.env?.VITE_API_URL || '',
-  INPTA_URL: import.meta.env?.VITE_INPTA_URL || 'https://fggroup.in/inpta/home-inpta',
+  INPTA_URL: import.meta.env?.VITE_INPTA_URL || 'https://inpta.fggroup.in/',
   APP_PLAY_URL:
     import.meta.env?.VITE_APP_PLAY_URL ||
     'https://play.google.com/store/apps/details?id=com.fgiit',
@@ -71,6 +71,23 @@ export async function sendTelemetry(type, data) {
 }
 
 /**
+ * Resilient fetch with abort timeout to avoid blocking execution on dead or hanging endpoints
+ */
+export async function fetchWithTimeout(url, options = {}, timeoutMs = 2800) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return res;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
  * Uploads a file (PDF/Blob/Image) to the fg-api S3 storage
  *
  * @param {Blob|File} blobOrFile
@@ -99,12 +116,18 @@ export async function uploadInquiryFile(blobOrFile, filename = 'assessment_repor
   }
   endpoints.push('https://api.fggroup.in/public/v1/file-upload');
 
-  for (const url of endpoints) {
+  const uniqueEndpoints = [...new Set(endpoints)];
+
+  for (const url of uniqueEndpoints) {
     try {
-      const res = await fetch(url, {
-        method: 'POST',
-        body: formData,
-      });
+      const res = await fetchWithTimeout(
+        url,
+        {
+          method: 'POST',
+          body: formData,
+        },
+        3000
+      );
       if (res.ok) {
         const json = await res.json();
         const fileUrl = json?.data?.fileLocations?.[0] || json?.data?.fileURLs?.[0];
@@ -174,9 +197,7 @@ export async function submitContactInquiry({
     payload.files = files;
   }
 
-  // Determine endpoint priority:
-  // If running locally, hit the local fg-api instance on port 80 first.
-  // Then fallback to the production api.fggroup.in.
+  // Determine endpoint priority with deduplication
   const isLocal =
     typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' ||
@@ -195,18 +216,23 @@ export async function submitContactInquiry({
   }
   endpoints.push('https://api.fggroup.in/public/v1/contact-inquiry');
 
+  const uniqueEndpoints = [...new Set(endpoints)];
   let lastError = null;
 
-  for (const url of endpoints) {
+  for (const url of uniqueEndpoints) {
     try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
+      const res = await fetchWithTimeout(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+        2800
+      );
 
       if (res.ok) {
         const json = await res.json().catch(() => ({ status: res.status }));
@@ -224,9 +250,128 @@ export async function submitContactInquiry({
   }
 
   // Backup telemetry call
-  await sendTelemetry('course_inquiry_fallback', payload);
+  await sendTelemetry('course_inquiry_fallback', payload).catch(() => {});
 
   return { success: false, error: lastError };
+}
+
+/* ================= BACKGROUND INQUIRY QUEUE & WORKER ================= */
+const INQUIRY_QUEUE_KEY = 'fgiit_inquiry_queue_v1';
+
+function getInquiryQueue() {
+  if (typeof window === 'undefined' || !window.localStorage) return [];
+  try {
+    const raw = localStorage.getItem(INQUIRY_QUEUE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveInquiryQueue(queue) {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    localStorage.setItem(INQUIRY_QUEUE_KEY, JSON.stringify(queue.slice(-25)));
+  } catch {}
+}
+
+let isQueueProcessing = false;
+
+/**
+ * Processes queued inquiries in the background with auto-retry.
+ */
+export async function processInquiryQueue() {
+  if (isQueueProcessing) return;
+  if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+
+  const queue = getInquiryQueue();
+  if (!queue.length) return;
+
+  isQueueProcessing = true;
+
+  try {
+    const remaining = [];
+    for (const item of queue) {
+      try {
+        const res = await submitContactInquiry(item.payload);
+        if (res?.success) {
+          console.info(`[FGIIT Background] Queued inquiry ${item.id} sent successfully`);
+          if (item.telemetry) {
+            sendTelemetry(item.telemetry.type, item.telemetry.data).catch(() => {});
+          }
+        } else {
+          if ((item.retries || 0) < 5) {
+            remaining.push({ ...item, retries: (item.retries || 0) + 1 });
+          }
+        }
+      } catch (err) {
+        console.warn(`[FGIIT Background] Item ${item.id} error:`, err?.message || err);
+        if ((item.retries || 0) < 5) {
+          remaining.push({ ...item, retries: (item.retries || 0) + 1 });
+        }
+      }
+    }
+    saveInquiryQueue(remaining);
+  } finally {
+    isQueueProcessing = false;
+  }
+}
+
+/**
+ * Dispatches a contact inquiry and email notification asynchronously in the background.
+ * Returns immediately so page loads and modal confirmation states render with zero lag.
+ *
+ * @param {Object} params - Inquiry parameters for submitContactInquiry
+ * @param {Object} [options]
+ * @param {Object} [options.telemetry] - Optional telemetry payload { type, data }
+ * @param {Function} [options.onComplete] - Optional callback
+ * @returns {string} Unique queue item ID
+ */
+export function dispatchInquiryInBackground(params, options = {}) {
+  const id = `inq_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const item = {
+    id,
+    payload: params,
+    telemetry: options.telemetry || null,
+    createdAt: new Date().toISOString(),
+    retries: 0,
+  };
+
+  // 1. Immediately persist to queue
+  const queue = getInquiryQueue();
+  queue.push(item);
+  saveInquiryQueue(queue);
+
+  // 2. Fire and forget queue processing in background
+  if (typeof window !== 'undefined') {
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(() => {
+        processInquiryQueue().then(() => options.onComplete?.()).catch(() => {});
+      });
+    } else {
+      setTimeout(() => {
+        processInquiryQueue().then(() => options.onComplete?.()).catch(() => {});
+      }, 0);
+    }
+  }
+
+  return id;
+}
+
+// Background sync listeners for offline recovery
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    processInquiryQueue().catch(() => {});
+  });
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      processInquiryQueue().catch(() => {});
+    }
+  });
+  // Initial drain
+  setTimeout(() => {
+    processInquiryQueue().catch(() => {});
+  }, 1200);
 }
 
 export const CATS = [
@@ -591,7 +736,7 @@ export const ACCREDITATION_NOTE =
 export const TIMELINE = [
   {
     num: 'Month 1',
-    title: 'Foundations of the Human Body',
+    title: 'Human Body Basics',
     desc: 'Basic anatomy, physiology and human movement.',
   },
   {
@@ -601,7 +746,7 @@ export const TIMELINE = [
   },
   {
     num: 'Month 3',
-    title: 'Nutrition Fundamentals',
+    title: 'Sports Nutrition Fundamentals',
     desc: 'Macronutrients, micronutrients and practical dietary planning.',
   },
   {
@@ -616,7 +761,7 @@ export const TIMELINE = [
   },
   {
     num: 'Month 6',
-    title: 'Career Preparation & Client Handling',
+    title: 'Career Readiness & Client Management',
     desc: 'Practical application and preparation for fitness industry opportunities.',
   },
 ];

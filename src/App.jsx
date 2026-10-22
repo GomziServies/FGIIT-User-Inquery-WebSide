@@ -16,7 +16,9 @@ import FAQ from './components/FAQ';
 import BottomCTA from './components/BottomCTA';
 import Footer from './components/Footer';
 import WhatsAppFloat from './components/WhatsAppFloat';
-import ModalRoot from './components/modals/ModalRoot';
+
+// Code-split ModalRoot chunk to keep initial landing page load instant (< 60kB)
+const ModalRoot = React.lazy(() => import('./components/modals/ModalRoot'));
 
 export default function App() {
   const [modalState, setModalState] = useState({ type: null, data: null });
@@ -33,6 +35,18 @@ export default function App() {
 
     window.addEventListener('load', scrollToHash);
     const timer = window.setTimeout(scrollToHash, 900);
+
+    // Idle prefetch ModalRoot so user clicking any CTA experiences zero delay
+    const idlePrefetch = () => {
+      import('./components/modals/ModalRoot').catch(() => {});
+    };
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(idlePrefetch);
+      } else {
+        setTimeout(idlePrefetch, 1800);
+      }
+    }
 
     return () => {
       window.removeEventListener('load', scrollToHash);
@@ -72,7 +86,9 @@ export default function App() {
       <Footer />
       <WhatsAppFloat />
 
-      <ModalRoot modalState={modalState} onClose={handleCloseModal} />
+      <React.Suspense fallback={null}>
+        <ModalRoot modalState={modalState} onClose={handleCloseModal} />
+      </React.Suspense>
     </>
   );
 }

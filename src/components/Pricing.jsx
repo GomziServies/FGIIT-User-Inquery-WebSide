@@ -1,5 +1,5 @@
 import React from 'react';
-import { INCLUDES, ACCREDITATION_NOTE } from '../data/fgiitData';
+import { INCLUDES, ACCREDITATION_NOTE, CONFIG } from '../data/fgiitData';
 import Icon from './Icons';
 
 export default function Pricing({ onOpenDemo }) {
@@ -108,7 +108,7 @@ export default function Pricing({ onOpenDemo }) {
                 'Daily Live Interactive Video Classes',
                 'FGIIT Academy App (Lifetime Revision)',
                 'Digital E-Books & Study Material PDF',
-                '100% Job Placement Assistance',
+                '100% Job Placement Assistance After Certification',
               ].map((item, idx) => (
                 <li
                   key={idx}
@@ -238,7 +238,13 @@ export default function Pricing({ onOpenDemo }) {
           <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: 'var(--muted)' }}>
             {ACCREDITATION_NOTE}
           </p>
-          <a href="#inpta" className="tap-link" style={{ fontSize: '14px', fontWeight: 700 }}>
+          <a
+            href={CONFIG.INPTA_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tap-link"
+            style={{ fontSize: '14px', fontWeight: 700 }}
+          >
             See how to apply through INPTA →
           </a>
         </div>

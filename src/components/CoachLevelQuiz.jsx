@@ -5,11 +5,9 @@ import {
   calculateScore,
   okPhone,
   okEmail,
-  sendTelemetry,
-  submitContactInquiry,
   uploadInquiryFile,
+  dispatchInquiryInBackground,
 } from '../data/fgiitData';
-import { generateCoachReportPDF, downloadCoachReportPDF } from '../utils/pdfGenerator';
 
 export default function CoachLevelQuiz({ onOpenReport }) {
   const [step, setStep] = useState(0);
@@ -60,7 +58,7 @@ export default function CoachLevelQuiz({ onOpenReport }) {
     if (err) setErr('');
   };
 
-  const handleSubmitLead = async (e) => {
+  const handleSubmitLead = (e) => {
     e.preventDefault();
     if (name.trim().length < 2) {
       setErr('Please enter your name.');
@@ -80,7 +78,9 @@ export default function CoachLevelQuiz({ onOpenReport }) {
     }
 
     setErr('');
-    setIsSubmitting(true);
+    setIsSubmitting(false);
+
+    // 1. Calculate score & report data
     const report = calculateScore(answers);
     const candidateData = {
       name: name.trim() || 'Candidate',
@@ -88,93 +88,9 @@ export default function CoachLevelQuiz({ onOpenReport }) {
       phone,
       status,
     };
-
-    let uploadedFileUrl = '';
     const cleanFilename = `FGIIT_Coach_Level_Report_${(name.trim() || 'Candidate').replace(/\s+/g, '_')}_${phone}.pdf`;
 
-    // Generate high-resolution PDF document instance
-    try {
-      const pdfDoc = generateCoachReportPDF(report, candidateData);
-
-      // 1. Auto download official PDF report to candidate immediately
-      try {
-        pdfDoc.save(cleanFilename);
-      } catch (saveErr) {
-        console.warn('[FGIIT] Auto PDF download error:', saveErr);
-      }
-
-      // 2. Upload PDF blob to fg-api backend for storage in AWS S3 and direct preview in admin panel
-      try {
-        const pdfBlob = pdfDoc.output('blob');
-        const uploadRes = await uploadInquiryFile(pdfBlob, cleanFilename);
-        if (uploadRes?.success && uploadRes?.url) {
-          uploadedFileUrl = uploadRes.url;
-        }
-      } catch (uploadErr) {
-        console.warn('[FGIIT] PDF upload to backend error:', uploadErr);
-      }
-    } catch (pdfGenErr) {
-      console.warn('[FGIIT] PDF generation error:', pdfGenErr);
-    }
-
-    // Format rich message for the FGIIT Contact Inquiries admin panel
-    // The report link is included in the message so it also reaches the
-    // acknowledgement email sent to the candidate.
-    const reportLinkLine = uploadedFileUrl
-      ? `Assessment Report (PDF): ${uploadedFileUrl}`
-      : 'Assessment Report (PDF): downloaded to your device after submission.';
-
-    const formattedMessage = [
-      `Coach Level Test Assessment`,
-      `Score: ${report.score}/${N} (${report.level[0]})`,
-      `Current Status: ${status}`,
-      `Lowest Scoring Focus Areas: ${report.weak.map((w) => w.n).join(', ')}`,
-      ``,
-      `Domain Breakdown:`,
-      ...report.cats.map((c) => `- ${c.n}: ${c.got}/${c.total} (${c.p}%)`),
-      ``,
-      reportLinkLine,
-    ].join('\n');
-
-    // Submit inquiry to fg-api backend with subject "Coach Level Test Assessment:"
-    const inquiryRes = await submitContactInquiry({
-      name: name.trim(),
-      email: email.trim(),
-      mobile: phone,
-      subject: 'Coach Level Test Assessment:',
-      message: formattedMessage,
-      source: window.location.href,
-      file: uploadedFileUrl || undefined,
-      files: uploadedFileUrl
-        ? [{ url: uploadedFileUrl, remark: 'Coach Level Test Assessment Report (PDF)' }]
-        : undefined,
-      details: {
-        score: `${report.score}/${N}`,
-        level: report.level[0],
-        levelDesc: report.level[1],
-        status,
-        weakAreas: report.weak.map((w) => w.n).join(', '),
-        sectionScores: report.cats.map((c) => `${c.n} ${c.got}/${c.total}`).join('; '),
-        categories: report.cats,
-        reportUrl: uploadedFileUrl,
-        reportFileName: cleanFilename,
-      },
-    });
-
-    // Also trigger telemetry hooks
-    await sendTelemetry('quiz_lead', {
-      name: name.trim(),
-      phone,
-      email: email.trim(),
-      status,
-      score: `${report.score}/${N}`,
-      level: report.level[0],
-      file: uploadedFileUrl,
-      weakAreas: report.weak.map((w) => w.n).join(', '),
-      sectionScores: report.cats.map((c) => `${c.n} ${c.got}/${c.total}`).join('; '),
-    });
-
-    setIsSubmitting(false);
+    // 2. INSTANT UI TRANSITION: Transition to report view with zero latency
     setStep(N + 1);
     onOpenReport({
       ...report,
@@ -182,9 +98,108 @@ export default function CoachLevelQuiz({ onOpenReport }) {
       email: email.trim(),
       phone,
       status,
-      fileUrl: uploadedFileUrl,
-      inquirySaved: inquiryRes?.success !== false,
+      fileUrl: '',
+      inquirySaved: true,
     });
+
+    // 3. BACKGROUND DISPATCH: PDF generation, S3 upload, email delivery & telemetry
+    (async () => {
+      let uploadedFileUrl = '';
+      try {
+        const { generateCoachReportPDF } = await import('../utils/pdfGenerator');
+        const pdfDoc = generateCoachReportPDF(report, candidateData);
+
+        // Auto download official PDF report to candidate
+        try {
+          pdfDoc.save(cleanFilename);
+        } catch (saveErr) {
+          console.warn('[FGIIT] Auto PDF download error:', saveErr);
+        }
+
+        // Upload PDF blob to fg-api backend for storage in AWS S3 and direct preview in admin panel
+        try {
+          const pdfBlob = pdfDoc.output('blob');
+          const uploadRes = await uploadInquiryFile(pdfBlob, cleanFilename);
+          if (uploadRes?.success && uploadRes?.url) {
+            uploadedFileUrl = uploadRes.url;
+            // Update report view with the permanent S3 file URL if modal is still open
+            onOpenReport({
+              ...report,
+              userName: name.trim(),
+              email: email.trim(),
+              phone,
+              status,
+              fileUrl: uploadedFileUrl,
+              inquirySaved: true,
+            });
+          }
+        } catch (uploadErr) {
+          console.warn('[FGIIT] PDF upload to backend error:', uploadErr);
+        }
+      } catch (pdfGenErr) {
+        console.warn('[FGIIT] Background PDF generation error:', pdfGenErr);
+      }
+
+      // Format rich message for the FGIIT Contact Inquiries admin panel and email
+      const reportLinkLine = uploadedFileUrl
+        ? `Assessment Report (PDF): ${uploadedFileUrl}`
+        : 'Assessment Report (PDF): downloaded to your device after submission.';
+
+      const formattedMessage = [
+        `Coach Level Test Assessment`,
+        `Score: ${report.score}/${N} (${report.level[0]})`,
+        `Current Status: ${status}`,
+        `Lowest Scoring Focus Areas: ${report.weak.map((w) => w.n).join(', ')}`,
+        ``,
+        `Domain Breakdown:`,
+        ...report.cats.map((c) => `- ${c.n}: ${c.got}/${c.total} (${c.p}%)`),
+        ``,
+        reportLinkLine,
+      ].join('\n');
+
+      // Dispatch inquiry & confirmation email in background via persistent queue
+      dispatchInquiryInBackground(
+        {
+          name: name.trim(),
+          email: email.trim(),
+          mobile: phone,
+          subject: 'Coach Level Test Assessment:',
+          message: formattedMessage,
+          source: window.location.href,
+          file: uploadedFileUrl || undefined,
+          files: uploadedFileUrl
+            ? [{ url: uploadedFileUrl, remark: 'Coach Level Test Assessment Report (PDF)' }]
+            : undefined,
+          details: {
+            score: `${report.score}/${N}`,
+            level: report.level[0],
+            levelDesc: report.level[1],
+            status,
+            weakAreas: report.weak.map((w) => w.n).join(', '),
+            sectionScores: report.cats.map((c) => `${c.n} ${c.got}/${c.total}`).join('; '),
+            categories: report.cats,
+            reportUrl: uploadedFileUrl,
+            reportFileName: cleanFilename,
+          },
+        },
+        {
+          telemetry: {
+            type: 'quiz_lead',
+            data: {
+              name: name.trim(),
+              phone,
+              email: email.trim(),
+              status,
+              score: `${report.score}/${N}`,
+              level: report.level[0],
+              file: uploadedFileUrl,
+              weakAreas: report.weak.map((w) => w.n).join(', '),
+              sectionScores: report.cats.map((c) => `${c.n} ${c.got}/${c.total}`).join('; '),
+            },
+          },
+        }
+      );
+    })();
   };
 
   const currentResult = step > N ? calculateScore(answers) : null;

@@ -1,11 +1,10 @@
 import React from 'react';
 import { CONFIG } from '../data/fgiitData';
 import Icon from './Icons';
-import CertificateGallery from './CertificateGallery';
 
 export default function InptaSection({ onApplyCertificate }) {
   return (
-    <section id="inpta" className="wrap section section--flush-bottom">
+    <section id="inpta" className="wrap section">
       <div className="head">
         <span className="eyebrow">INPTA – Indian Nutritionist Personal Trainer Accreditation</span>
         <h2>Get Professionally Accredited Through INPTA</h2>
@@ -69,8 +68,6 @@ export default function InptaSection({ onApplyCertificate }) {
           </a>
         </div>
       </div>
-
-      <CertificateGallery />
     </section>
   );
 }
