@@ -769,45 +769,56 @@ a:hover {
 .opt {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   width: 100%;
   text-align: left;
-  min-height: 54px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  border: 1px solid #D5DED9;
-  background: #fff;
+  min-height: 58px;
+  padding: 13px 18px;
+  border-radius: 16px;
+  border: 1.5px solid #E1EBE5;
+  background: #ffffff;
   color: var(--ink);
-  font: 15px/1.45 'DM Sans', system-ui, sans-serif;
+  font: 500 15px/1.45 'DM Sans', system-ui, sans-serif;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(11, 18, 16, 0.02);
 }
 
 .opt:hover {
   border-color: var(--lime);
+  background: #FAFCF6;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(155, 192, 40, 0.12);
 }
 
 .opt .k {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   flex: none;
   border-radius: 50%;
-  border: 1px solid var(--line2);
+  border: 1.5px solid #D2DCD7;
+  background: #F6F9F7;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 13.5px;
+  color: var(--muted);
+  transition: all 0.2s ease;
 }
 
 .opt.on {
-  border-color: var(--lime);
-  background: var(--tint);
+  border-color: #83A61E;
+  background: linear-gradient(90deg, #F5FAEB 0%, #FFFFFF 100%);
+  box-shadow: 0 4px 16px rgba(155, 192, 40, 0.2);
+  transform: translateY(-1px);
 }
 
 .opt.on .k {
-  background: var(--lime);
-  border-color: var(--lime);
+  background: linear-gradient(135deg, #A2C82B 0%, #8EB620 100%);
+  border-color: #8EB620;
+  color: #0B1210;
+  box-shadow: 0 2px 8px rgba(155, 192, 40, 0.4);
 }
 
 .field {
@@ -968,6 +979,23 @@ header.top {
 
 .nav-links a:hover {
   color: var(--deep);
+}
+
+.nav-links a.active {
+  color: var(--deep);
+  font-weight: 700;
+  position: relative;
+}
+
+.nav-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: var(--lime);
+  border-radius: 2px;
 }
 
 /* Demo button inside the nav — desktop sits inline, mobile drops into the menu */
@@ -1189,8 +1217,9 @@ details p {
   transform: translateY(-2px);
 }
 
-@media (max-width: 760px) {
-  .hide-sm {
+@media (max-width: 768px) {
+  .hide-sm,
+  .hero-subtitle {
     display: none !important;
   }
 }

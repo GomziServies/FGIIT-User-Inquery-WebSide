@@ -7,15 +7,17 @@ import {
   okEmail,
   uploadInquiryFile,
   dispatchInquiryInBackground,
+  saveUserProfile,
+  getUserProfile,
 } from '../data/fgiitData';
 
-export default function CoachLevelQuiz({ onOpenReport }) {
+export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState([]);
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('');
+  const [name, setName] = useState(() => getUserProfile()?.name || '');
+  const [phone, setPhone] = useState(() => getUserProfile()?.phone || '');
+  const [email, setEmail] = useState(() => getUserProfile()?.email || '');
+  const [status, setStatus] = useState(() => getUserProfile()?.status || '');
   const [err, setErr] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,9 +54,30 @@ export default function CoachLevelQuiz({ onOpenReport }) {
     setErr('');
   };
 
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    setName(val);
+    saveUserProfile({ name: val });
+    if (err) setErr('');
+  };
+
   const handlePhoneChange = (e) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
     setPhone(raw);
+    saveUserProfile({ phone: raw });
+    if (err) setErr('');
+  };
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value;
+    setEmail(val);
+    saveUserProfile({ email: val });
+    if (err) setErr('');
+  };
+
+  const handleStatusChange = (val) => {
+    setStatus(val);
+    saveUserProfile({ status: val });
     if (err) setErr('');
   };
 
@@ -80,6 +103,14 @@ export default function CoachLevelQuiz({ onOpenReport }) {
     setErr('');
     setIsSubmitting(false);
 
+    // Save profile for auto-fill in Course Buy / Demo / Brochure modals
+    saveUserProfile({
+      name: name.trim(),
+      phone,
+      email: email.trim(),
+      status,
+    });
+
     // 1. Calculate score & report data
     const report = calculateScore(answers);
     const candidateData = {
@@ -90,19 +121,14 @@ export default function CoachLevelQuiz({ onOpenReport }) {
     };
     const cleanFilename = `FGIIT_Coach_Level_Report_${(name.trim() || 'Candidate').replace(/\s+/g, '_')}_${phone}.pdf`;
 
-    // 2. INSTANT UI TRANSITION: Transition to report view with zero latency
-    setStep(N + 1);
-    onOpenReport({
-      ...report,
-      userName: name.trim(),
-      email: email.trim(),
-      phone,
-      status,
-      fileUrl: '',
-      inquirySaved: true,
-    });
+    // 2. IMMEDIATE REDIRECTION: Seamlessly navigate to Courses section (#courses)
+    if (onNavigate) {
+      onNavigate('home', 'courses');
+    } else {
+      window.location.href = '/#courses';
+    }
 
-    // 3. BACKGROUND DISPATCH: PDF generation, S3 upload, email delivery & telemetry
+    // 3. BACKGROUND DISPATCH: PDF generation, auto-download, S3 upload & lead capture
     (async () => {
       let uploadedFileUrl = '';
       try {
@@ -122,16 +148,6 @@ export default function CoachLevelQuiz({ onOpenReport }) {
           const uploadRes = await uploadInquiryFile(pdfBlob, cleanFilename);
           if (uploadRes?.success && uploadRes?.url) {
             uploadedFileUrl = uploadRes.url;
-            // Update report view with the permanent S3 file URL if modal is still open
-            onOpenReport({
-              ...report,
-              userName: name.trim(),
-              email: email.trim(),
-              phone,
-              status,
-              fileUrl: uploadedFileUrl,
-              inquirySaved: true,
-            });
           }
         } catch (uploadErr) {
           console.warn('[FGIIT] PDF upload to backend error:', uploadErr);
@@ -202,37 +218,103 @@ export default function CoachLevelQuiz({ onOpenReport }) {
     })();
   };
 
-  const currentResult = step > N ? calculateScore(answers) : null;
+  const currentResult = step >= N ? calculateScore(answers) : null;
+
+  const handleDownloadPDF = async () => {
+    try {
+      const { downloadCoachReportPDF } = await import('../utils/pdfGenerator');
+      downloadCoachReportPDF(currentResult, {
+        name: name.trim() || 'Candidate',
+        email: email.trim(),
+        phone,
+        status,
+      });
+    } catch (err) {
+      console.warn('[FGIIT] PDF download error:', err);
+    }
+  };
 
   return (
-    <section id="test" style={{ background: 'var(--bg2)' }}>
+    <section
+      id="test"
+      style={{
+        background:
+          'radial-gradient(ellipse at 12% 15%, rgba(155, 192, 40, 0.08) 0%, transparent 45%), radial-gradient(ellipse at 88% 85%, rgba(74, 99, 11, 0.06) 0%, transparent 45%), #F8FAF9',
+        borderTop: '1px solid var(--line)',
+        borderBottom: '1px solid var(--line)',
+      }}
+    >
       <div
         className="wrap"
         style={{
-          paddingTop: '52px',
-          paddingBottom: '52px',
+          paddingTop: 'clamp(44px, 5vw, 68px)',
+          paddingBottom: 'clamp(48px, 5.5vw, 76px)',
           display: 'flex',
           flexWrap: 'wrap',
-          gap: '32px',
+          gap: 'clamp(28px, 4vw, 48px)',
           alignItems: 'flex-start',
         }}
       >
-        {/* Left Column: Test Intro and Category Chips */}
+        {/* Left Column: Test Intro, Live Category Sync and Trust Badges */}
         <div
           style={{
-            flex: '1 1 300px',
+            flex: '1 1 320px',
             minWidth: 0,
             display: 'flex',
             flexDirection: 'column',
-            gap: '14px',
+            gap: '18px',
           }}
         >
-          <span className="eyebrow">FREE · 15 QUESTIONS · 4 MINUTES</span>
-          <h2 className="h2">What Level of Fitness Trainer Are You?</h2>
-          <p style={{ margin: 0, fontSize: '16px', lineHeight: 1.65, color: 'var(--muted)' }}>
+          {/* Eyebrow with pulsating indicator */}
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '5px 12px',
+              borderRadius: '999px',
+              background: '#FFFFFF',
+              border: '1px solid #D8E4DB',
+              fontSize: '11.5px',
+              fontWeight: 800,
+              letterSpacing: '0.04em',
+              color: 'var(--deep)',
+              alignSelf: 'flex-start',
+              boxShadow: '0 2px 6px rgba(11, 18, 16, 0.03)',
+            }}
+          >
+            <span
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: 'var(--lime)',
+                boxShadow: '0 0 8px rgba(155, 192, 40, 0.8)',
+                display: 'inline-block',
+              }}
+            />
+            FREE · 15 QUESTIONS · 4 MINUTES
+          </div>
+
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 'clamp(28px, 3.2vw, 38px)',
+              lineHeight: 1.18,
+              letterSpacing: '-0.025em',
+              fontWeight: 800,
+              fontFamily: 'var(--font-heading)',
+              color: 'var(--ink)',
+            }}
+          >
+            What Level of Fitness Trainer Are You?
+          </h2>
+
+          <p style={{ margin: 0, fontSize: '15.5px', lineHeight: 1.65, color: 'var(--muted)' }}>
             Take our free assessment to discover your current trainer level and identify
             opportunities to improve your knowledge and skills.
           </p>
+
           <button
             type="button"
             className="btn btn-lime"
@@ -244,87 +326,221 @@ export default function CoachLevelQuiz({ onOpenReport }) {
                 if (first) first.focus({ preventScroll: true });
               }
             }}
-            style={{ alignSelf: 'flex-start', minHeight: '48px' }}
+            style={{
+              alignSelf: 'flex-start',
+              minHeight: '50px',
+              padding: '0 24px',
+              fontSize: '15px',
+              boxShadow: '0 8px 24px -4px rgba(155, 192, 40, 0.42)',
+            }}
           >
-            Take the Free Assessment
+            Take the Free Assessment ↓
           </button>
-          <div className="chips" id="catList">
-            {CATS.map((cat, idx) => (
-              <span
-                key={idx}
-                style={{
-                  fontSize: '13px',
-                  padding: '6px 12px',
-                  borderRadius: '999px',
-                  background: '#fff',
-                  border: '1px solid var(--line)',
-                  color: 'var(--text2)',
-                }}
-              >
-                {cat}
-              </span>
-            ))}
+
+          {/* Category Chips with Live Active Highlight */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '4px' }}>
+            <span
+              style={{
+                fontSize: '11.5px',
+                fontWeight: 800,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                color: 'var(--muted)',
+              }}
+            >
+              Evaluation Domains:
+            </span>
+            <div className="chips" id="catList">
+              {CATS.map((cat, idx) => {
+                const isCurrentCat = step < N && QUESTIONS[step]?.cat === idx;
+                return (
+                  <span
+                    key={idx}
+                    style={{
+                      fontSize: '12.5px',
+                      padding: '6px 14px',
+                      borderRadius: '999px',
+                      background: isCurrentCat ? 'var(--tint)' : '#FFFFFF',
+                      border: '1.5px solid',
+                      borderColor: isCurrentCat ? 'var(--deep)' : 'var(--line)',
+                      color: isCurrentCat ? 'var(--deep)' : 'var(--text2)',
+                      fontWeight: isCurrentCat ? 800 : 500,
+                      boxShadow: isCurrentCat
+                        ? '0 2px 10px rgba(74, 99, 11, 0.15)'
+                        : '0 1px 3px rgba(11, 18, 16, 0.02)',
+                      transition: 'all 0.25s ease',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    {isCurrentCat && (
+                      <span style={{ color: 'var(--lime)', fontWeight: 800, lineHeight: 1 }}>•</span>
+                    )}
+                    {cat}
+                  </span>
+                );
+              })}
+            </div>
           </div>
+
+          {/* Trust & Benchmark Social Proof Card / Dynamic Live Score */}
+          {currentResult && step === N ? (
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #F4F9E6 0%, #FFFFFF 100%)',
+                border: '1.5px solid var(--lime)',
+                borderRadius: '16px',
+                padding: '14px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                boxShadow: '0 4px 14px rgba(155, 192, 40, 0.15)',
+                marginTop: '4px',
+              }}
+            >
+              <span style={{ fontSize: '26px', lineHeight: 1 }}>🏆</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--deep)' }}>
+                  Your Score: {currentResult.score}/{N} ({Math.round((currentResult.score / N) * 100)}%)
+                </span>
+                <span style={{ fontSize: '12px', color: 'var(--text2)', fontWeight: 600 }}>
+                  Benchmarked Level: {currentResult.level[0]}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                background: '#FFFFFF',
+                border: '1px solid #E1ECE6',
+                borderRadius: '16px',
+                padding: '14px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                boxShadow: '0 4px 14px rgba(11, 18, 16, 0.03)',
+                marginTop: '4px',
+              }}
+            >
+              <span style={{ fontSize: '24px', lineHeight: 1 }}>🎯</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ink)' }}>
+                  25,000+ Coaches Benchmarked
+                </span>
+                <span style={{ fontSize: '11.5px', color: 'var(--muted)' }}>
+                  Instant score report card with PDF download
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Right Column: Quiz Box */}
+        {/* Right Column: Quiz Box (Refined Card Architecture) */}
         <div
           id="quiz"
           aria-live="polite"
           style={{
-            flex: '999 1 520px',
+            flex: '999 1 540px',
             minWidth: 0,
-            background: '#fff',
-            border: '1px solid var(--line)',
-            borderRadius: '24px',
-            padding: 'clamp(20px, 4vw, 32px)',
+            background: '#FFFFFF',
+            border: '1.5px solid #E2EDE7',
+            borderRadius: '26px',
+            padding: 'clamp(22px, 4vw, 36px)',
             display: 'flex',
             flexDirection: 'column',
-            gap: '20px',
-            boxShadow: '0 4px 20px rgba(11, 18, 16, 0.04)',
+            gap: '22px',
+            boxShadow: '0 20px 52px -12px rgba(11, 18, 16, 0.07), 0 2px 8px rgba(11, 18, 16, 0.03)',
           }}
         >
           {step < N ? (
             /* Question Phase */
             <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {/* Progress & Category Top Bar */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    gap: '10px',
-                    fontSize: '13px',
-                    color: 'var(--muted)',
+                    alignItems: 'center',
+                    gap: '12px',
+                    flexWrap: 'wrap',
                   }}
                 >
-                  <span>
-                    Question {step + 1} of {N} · {CATS[QUESTIONS[step].cat]}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span
+                      style={{
+                        fontSize: '11.5px',
+                        fontWeight: 800,
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase',
+                        background: 'var(--tint)',
+                        color: 'var(--deep)',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        border: '1px solid #DCE6D2',
+                      }}
+                    >
+                      {CATS[QUESTIONS[step].cat]}
+                    </span>
+                    <span style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--ink)' }}>
+                      Question {step + 1}{' '}
+                      <span style={{ color: 'var(--muted)', fontWeight: 500 }}>of {N}</span>
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '12.5px',
+                      fontWeight: 800,
+                      color: 'var(--deep)',
+                      background: '#F1F7EE',
+                      padding: '4px 12px',
+                      borderRadius: '999px',
+                      border: '1px solid #DCE6D2',
+                    }}
+                  >
+                    {Math.round((step / N) * 100)}% Answered
                   </span>
-                  <span>{Math.round((step / N) * 100)}%</span>
                 </div>
+
                 <div
                   style={{
-                    height: '6px',
-                    background: '#E8EEEB',
+                    height: '8px',
+                    background: '#EDF3F0',
                     borderRadius: '999px',
                     overflow: 'hidden',
+                    position: 'relative',
                   }}
                 >
                   <div
                     style={{
                       height: '100%',
                       width: `${Math.round((step / N) * 100)}%`,
-                      background: 'var(--lime)',
-                      transition: 'width 0.2s ease',
+                      background: 'linear-gradient(90deg, #9BC028 0%, #B4DC2E 100%)',
+                      borderRadius: '999px',
+                      transition: 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                      boxShadow: '0 0 8px rgba(155, 192, 40, 0.5)',
                     }}
                   />
                 </div>
               </div>
 
-              <h3 style={{ margin: 0, fontSize: '19px', lineHeight: 1.4 }}>
+              {/* Question Text */}
+              <h3
+                style={{
+                  margin: 0,
+                  fontSize: 'clamp(18px, 2.2vw, 22px)',
+                  lineHeight: 1.38,
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-heading)',
+                  color: 'var(--ink)',
+                  letterSpacing: '-0.015em',
+                }}
+              >
                 {QUESTIONS[step].text}
               </h3>
 
+              {/* Options Stack */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {QUESTIONS[step].opts.map((opt, i) => {
                   const isSelected = answers[step] === i;
@@ -337,25 +553,27 @@ export default function CoachLevelQuiz({ onOpenReport }) {
                       onClick={() => handleSelectOption(i)}
                     >
                       <span className="k">{'ABCD'[i]}</span>
-                      <span>{opt}</span>
+                      <span style={{ flex: '1 1 auto' }}>{opt}</span>
                     </button>
                   );
                 })}
               </div>
 
               {err && (
-                <div className="err" role="alert">
+                <div className="err" role="alert" style={{ borderRadius: '12px', padding: '10px 14px' }}>
                   {err}
                 </div>
               )}
 
+              {/* Navigation CTAs */}
               <div
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
+                  alignItems: 'center',
                   gap: '12px',
-                  borderTop: '1px solid #EEF2F0',
-                  paddingTop: '18px',
+                  borderTop: '1px solid #EEF3F0',
+                  paddingTop: '20px',
                 }}
               >
                 <button
@@ -363,28 +581,269 @@ export default function CoachLevelQuiz({ onOpenReport }) {
                   className="btn btn-ghost"
                   onClick={handleBack}
                   disabled={step === 0}
+                  style={{ minHeight: '48px', padding: '0 20px' }}
                 >
-                  Back
+                  ← Back
                 </button>
                 <button
                   type="button"
-                  className="btn btn-green"
+                  className="btn btn-lime"
                   onClick={handleNext}
-                  style={{ minWidth: '140px' }}
+                  style={{
+                    minWidth: '150px',
+                    minHeight: '48px',
+                    padding: '0 24px',
+                    fontWeight: 800,
+                  }}
                 >
-                  {step === N - 1 ? 'Finish' : 'Next'}
+                  {step === N - 1 ? 'Finish Assessment →' : 'Next Question →'}
                 </button>
               </div>
             </>
           ) : step === N ? (
             /* Lead Capture Phase */
-            <form onSubmit={handleSubmitLead} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <form onSubmit={handleSubmitLead} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+              {/* Official Diagnostic Score Banner */}
+              {currentResult && (
+                <div
+                  style={{
+                    background: 'linear-gradient(135deg, #F4F9E6 0%, #FFFFFF 100%)',
+                    border: '2px solid var(--lime)',
+                    borderRadius: '20px',
+                    padding: '20px 22px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '14px',
+                    boxShadow: '0 8px 24px -4px rgba(155, 192, 40, 0.22)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '14px',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      {/* Round Score Dial / Circular Badge */}
+                      <div
+                        style={{
+                          position: 'relative',
+                          width: '66px',
+                          height: '66px',
+                          borderRadius: '50%',
+                          flexShrink: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <svg
+                          width="66"
+                          height="66"
+                          viewBox="0 0 68 68"
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            transform: 'rotate(-90deg)',
+                          }}
+                          aria-hidden="true"
+                        >
+                          <circle
+                            cx="34"
+                            cy="34"
+                            r="29"
+                            fill="none"
+                            stroke="#DDE8C4"
+                            strokeWidth="4"
+                          />
+                          <circle
+                            cx="34"
+                            cy="34"
+                            r="29"
+                            fill="none"
+                            stroke="var(--lime)"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            strokeDasharray={`${((currentResult.score / N) * 182.21).toFixed(1)} 182.21`}
+                          />
+                        </svg>
+                        <div
+                          style={{
+                            width: '52px',
+                            height: '52px',
+                            borderRadius: '50%',
+                            background: 'var(--deep)',
+                            color: '#FFFFFF',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 3px 10px rgba(74, 99, 11, 0.28)',
+                            zIndex: 1,
+                          }}
+                        >
+                          <span style={{ fontSize: '20px', fontWeight: 900, lineHeight: 1 }}>
+                            {currentResult.score}
+                          </span>
+                          <span style={{ fontSize: '10px', opacity: 0.85, fontWeight: 700 }}>
+                            / {N}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span
+                            style={{
+                              fontSize: '11.5px',
+                              fontWeight: 800,
+                              letterSpacing: '0.06em',
+                              textTransform: 'uppercase',
+                              color: 'var(--deep)',
+                            }}
+                          >
+                            Your Assessment Score
+                          </span>
+                          <span
+                            style={{
+                              background: 'var(--lime)',
+                              color: 'var(--ink)',
+                              fontSize: '11px',
+                              fontWeight: 800,
+                              padding: '2px 8px',
+                              borderRadius: '999px',
+                            }}
+                          >
+                            {Math.round((currentResult.score / N) * 100)}%
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '22px',
+                            fontWeight: 800,
+                            color: 'var(--ink)',
+                            fontFamily: 'var(--font-heading)',
+                            marginTop: '2px',
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          {currentResult.level[0]}
+                        </div>
+                      </div>
+                    </div>
+
+                    {onOpenReport && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onOpenReport({
+                            ...currentResult,
+                            userName: name.trim() || 'Candidate',
+                            email: email.trim(),
+                            phone,
+                            status: status || 'Candidate',
+                          })
+                        }
+                        style={{
+                          background: '#FFFFFF',
+                          border: '1.5px solid var(--lime)',
+                          borderRadius: '999px',
+                          padding: '7px 14px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: 'var(--deep)',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'var(--tint)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#FFFFFF';
+                        }}
+                      >
+                        <span>📊</span>
+                        <span>View Detailed Breakdown</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--text2)', lineHeight: 1.55 }}>
+                    {currentResult.level[1]}
+                  </p>
+
+                  {/* Domain Breakdown Pills */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', paddingTop: '2px' }}>
+                    {currentResult.cats.map((cat, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          fontSize: '11px',
+                          padding: '4px 9px',
+                          borderRadius: '8px',
+                          background: '#FFFFFF',
+                          border: '1px solid #E1ECE6',
+                          color: 'var(--text2)',
+                          fontWeight: 600,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: '7px',
+                            height: '7px',
+                            borderRadius: '50%',
+                            background: cat.color,
+                          }}
+                        />
+                        {cat.n}: <b style={{ color: 'var(--ink)' }}>{cat.got}/{cat.total}</b>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
-                <h3 style={{ margin: 0, fontSize: '22px' }}>
-                  All {N} answered. Where should we send your report?
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    background: 'var(--tint)',
+                    color: 'var(--deep)',
+                    fontSize: '11.5px',
+                    fontWeight: 800,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    marginBottom: '8px',
+                  }}
+                >
+                  🎉 All 15 Questions Answered
+                </div>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: 'clamp(20px, 2.4vw, 25px)',
+                    fontWeight: 800,
+                    color: 'var(--ink)',
+                    lineHeight: 1.25,
+                  }}
+                >
+                  Where should we send your official diagnostic report?
                 </h3>
-                <p style={{ margin: '6px 0 0', fontSize: '15px', color: 'var(--muted)' }}>
-                  See it right here, and get a copy on WhatsApp with your improvement plan.
+                <p style={{ margin: '6px 0 0', fontSize: '14.5px', color: 'var(--muted)', lineHeight: 1.55 }}>
+                  View your competency score breakdown on-screen, plus receive an instant official PDF report and
+                  improvement plan on WhatsApp.
                 </p>
               </div>
 
@@ -394,12 +853,10 @@ export default function CoachLevelQuiz({ onOpenReport }) {
                   <input
                     type="text"
                     autoComplete="name"
-                    placeholder="Your name"
+                    placeholder="Your full name"
                     value={name}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                      if (err) setErr('');
-                    }}
+                    onChange={handleNameChange}
+                    style={{ borderRadius: '12px' }}
                   />
                 </label>
                 <label className="field">
@@ -411,6 +868,7 @@ export default function CoachLevelQuiz({ onOpenReport }) {
                     placeholder="10-digit mobile"
                     value={phone}
                     onChange={handlePhoneChange}
+                    style={{ borderRadius: '12px' }}
                   />
                 </label>
                 <label className="field">
@@ -420,16 +878,16 @@ export default function CoachLevelQuiz({ onOpenReport }) {
                     autoComplete="email"
                     placeholder="you@example.com (optional)"
                     value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (err) setErr('');
-                    }}
+                    onChange={handleEmailChange}
+                    style={{ borderRadius: '12px' }}
                   />
                 </label>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <span className="lbl">You are currently *</span>
+                <span className="lbl" style={{ fontWeight: 700, fontSize: '13.5px' }}>
+                  You are currently *
+                </span>
                 <div className="chips">
                   {['Student', 'Working trainer', 'Gym owner', 'Career switcher'].map((s) => {
                     const active = status === s;
@@ -439,10 +897,7 @@ export default function CoachLevelQuiz({ onOpenReport }) {
                         type="button"
                         className={`chip${active ? ' on' : ''}`}
                         aria-pressed={active}
-                        onClick={() => {
-                          setStatus(s);
-                          if (err) setErr('');
-                        }}
+                        onClick={() => handleStatusChange(s)}
                       >
                         {s}
                       </button>
@@ -452,71 +907,144 @@ export default function CoachLevelQuiz({ onOpenReport }) {
               </div>
 
               {err && (
-                <div className="err" role="alert">
+                <div className="err" role="alert" style={{ borderRadius: '12px', padding: '10px 14px' }}>
                   {err}
                 </div>
               )}
+
+              {/* Privacy Notice */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '12px',
+                  color: 'var(--muted)',
+                }}
+              >
+                <span>🔒</span>
+                <span>Your contact details are strictly confidential. No spam guaranteed.</span>
+              </div>
 
               <div
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
+                  alignItems: 'center',
                   gap: '12px',
-                  borderTop: '1px solid #EEF2F0',
-                  paddingTop: '18px',
+                  borderTop: '1px solid #EEF3F0',
+                  paddingTop: '20px',
                 }}
               >
-                <button type="button" className="btn btn-ghost" onClick={handleBack} disabled={isSubmitting}>
-                  Back
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={handleBack}
+                  disabled={isSubmitting}
+                  style={{ minHeight: '48px', padding: '0 20px' }}
+                >
+                  ← Back
                 </button>
-                <button type="submit" className="btn btn-lime" disabled={isSubmitting}>
-                  {isSubmitting ? 'Submitting...' : 'See my report'}
+                <button
+                  type="submit"
+                  className="btn btn-lime"
+                  disabled={isSubmitting}
+                  style={{ minHeight: '52px', padding: '0 28px', fontWeight: 800 }}
+                >
+                  {isSubmitting ? 'Redirecting to Courses...' : 'Explore Our Courses →'}
                 </button>
               </div>
             </form>
           ) : (
             /* Completed Result Phase */
             currentResult && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <span className="eyebrow">YOUR RESULT</span>
-                <h3 style={{ margin: 0, fontSize: '24px' }}>
-                  {currentResult.score}/{N} · {currentResult.level[0]}
-                </h3>
-                <p style={{ margin: 0, fontSize: '15px', color: 'var(--muted)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <span className="eyebrow">YOUR OFFICIAL BENCHMARK RESULT</span>
+
+                <div
+                  style={{
+                    background: 'linear-gradient(135deg, #F4F9E6 0%, #FFFFFF 100%)',
+                    border: '1.5px solid var(--lime)',
+                    borderRadius: '20px',
+                    padding: '22px 26px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '16px',
+                    flexWrap: 'wrap',
+                    boxShadow: '0 4px 18px rgba(155, 192, 40, 0.15)',
+                  }}
+                >
+                  <div>
+                    <div
+                      style={{
+                        fontSize: '34px',
+                        fontWeight: 800,
+                        color: 'var(--deep)',
+                        fontFamily: 'var(--font-heading)',
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      {currentResult.score}{' '}
+                      <span style={{ fontSize: '18px', color: 'var(--muted)', fontWeight: 500 }}>
+                        / {N}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--ink)', marginTop: '4px' }}>
+                      {currentResult.level[0]}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      background: 'var(--lime)',
+                      color: 'var(--ink)',
+                      fontWeight: 800,
+                      padding: '8px 16px',
+                      borderRadius: '999px',
+                      fontSize: '13px',
+                      boxShadow: '0 2px 8px rgba(155, 192, 40, 0.35)',
+                    }}
+                  >
+                    {Math.round((currentResult.score / N) * 100)}% Score
+                  </div>
+                </div>
+
+                <p style={{ margin: 0, fontSize: '15.5px', color: 'var(--text2)', lineHeight: 1.6 }}>
                   {currentResult.level[1]}
                 </p>
+
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', paddingTop: '8px' }}>
-                  <button
-                    type="button"
-                    className="btn btn-green"
-                    onClick={() =>
-                    onOpenReport({
-                      ...currentResult,
-                      userName: name.trim(),
-                      email: email.trim(),
-                      phone,
-                      status,
-                    })
-                    }
-                  >
-                    View my report
-                  </button>
                   <button
                     type="button"
                     className="btn btn-lime"
                     onClick={() =>
-                      downloadCoachReportPDF(currentResult, {
-                        name: name.trim() || 'Candidate',
+                      onOpenReport({
+                        ...currentResult,
+                        userName: name.trim(),
                         email: email.trim(),
                         phone,
                         status,
                       })
                     }
+                    style={{ minHeight: '52px', padding: '0 26px', fontWeight: 800 }}
                   >
-                    Download PDF Report
+                    View Full Score Report
                   </button>
-                  <button type="button" className="btn btn-ghost" onClick={handleRetake}>
-                    Retake test
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={handleDownloadPDF}
+                    style={{ minHeight: '52px', padding: '0 22px' }}
+                  >
+                    📄 Download PDF Report
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={handleRetake}
+                    style={{ minHeight: '52px' }}
+                  >
+                    ↺ Retake Test
                   </button>
                 </div>
               </div>

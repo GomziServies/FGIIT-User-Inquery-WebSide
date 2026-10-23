@@ -11,6 +11,8 @@ import {
   sendTelemetry,
   dispatchInquiryInBackground,
   getDemoDays,
+  getUserProfile,
+  saveUserProfile,
 } from '../../data/fgiitData';
 
 export default function ModalRoot({ modalState, onClose }) {
@@ -300,16 +302,31 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
   const price = isNt ? '₹4,999' : (c?.price || '₹2,999');
   const courseName = isNt ? 'Nutri-Trainer Combo' : (c?.name || 'Course');
 
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState(() => getUserProfile()?.name || '');
+  const [phone, setPhone] = useState(() => getUserProfile()?.phone || '');
+  const [email, setEmail] = useState(() => getUserProfile()?.email || '');
   const [err, setErr] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    setName(val);
+    saveUserProfile({ name: val });
+    if (err) setErr('');
+  };
+
   const handlePhoneChange = (e) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
     setPhone(raw);
+    saveUserProfile({ phone: raw });
+    if (err) setErr('');
+  };
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value;
+    setEmail(val);
+    saveUserProfile({ email: val });
     if (err) setErr('');
   };
 
@@ -331,6 +348,13 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
     }
 
     setErr('');
+
+    // Persist latest details so user doesn't have to re-enter
+    saveUserProfile({
+      name: name.trim(),
+      phone,
+      email: email.trim(),
+    });
 
     // Instant UI transition - zero latency for user
     setDone(true);
@@ -574,10 +598,7 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
                 autoComplete="name"
                 placeholder="e.g. Rahul Sharma"
                 value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  if (err) setErr('');
-                }}
+                onChange={handleNameChange}
               />
             </label>
 
@@ -619,10 +640,7 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
                 autoComplete="email"
                 placeholder="e.g. rahul@gmail.com"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (err) setErr('');
-                }}
+                onChange={handleEmailChange}
               />
               <span style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
                 Login credentials and confirmation will be sent to this email.
@@ -703,7 +721,7 @@ function CourseModalContent({ courseId, onClose }) {
         }}
       >
         <span className="eyebrow">
-          {isNt ? 'NUTRI-TRAINER COMBO · ALL COURSES IN ONE' : 'FULL COURSE · ₹2,999'}
+          {isNt ? 'NUTRI-TRAINER COMBO · ALL COURSES IN ONE' : `FULL COURSE · ${price}`}
         </span>
         <h2 style={{ margin: 0, fontSize: 'clamp(24px, 3vw, 30px)', lineHeight: 1.2, paddingRight: '48px' }}>
           {name}
@@ -795,17 +813,32 @@ function DemoModalContent({ onClose }) {
   const [mode, setMode] = useState('');
   const [day, setDay] = useState('');
   const [slot, setSlot] = useState('');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState(() => getUserProfile()?.name || '');
+  const [phone, setPhone] = useState(() => getUserProfile()?.phone || '');
+  const [email, setEmail] = useState(() => getUserProfile()?.email || '');
   const [err, setErr] = useState('');
   const [done, setDone] = useState(false);
 
   const daysList = getDemoDays();
 
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    setName(val);
+    saveUserProfile({ name: val });
+    if (err) setErr('');
+  };
+
   const handlePhoneChange = (e) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
     setPhone(raw);
+    saveUserProfile({ phone: raw });
+    if (err) setErr('');
+  };
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value;
+    setEmail(val);
+    saveUserProfile({ email: val });
     if (err) setErr('');
   };
 
@@ -833,6 +866,13 @@ function DemoModalContent({ onClose }) {
     }
 
     setErr('');
+
+    // Persist details
+    saveUserProfile({
+      name: name.trim(),
+      phone,
+      email: email.trim(),
+    });
 
     // Instant UI transition - zero latency for user
     setDone(true);
@@ -1026,10 +1066,7 @@ function DemoModalContent({ onClose }) {
               autoComplete="name"
               placeholder="Full name"
               value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (err) setErr('');
-              }}
+              onChange={handleNameChange}
             />
           </label>
           <label className="field">
@@ -1050,10 +1087,7 @@ function DemoModalContent({ onClose }) {
               autoComplete="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (err) setErr('');
-              }}
+              onChange={handleEmailChange}
             />
           </label>
 
@@ -1087,18 +1121,40 @@ function DemoModalContent({ onClose }) {
 
 /* ================= CERTIFICATE APPLICATION (INPTA) MODAL ================= */
 function CertificateApplyModalContent({ onClose }) {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [city, setCity] = useState('');
+  const [name, setName] = useState(() => getUserProfile()?.name || '');
+  const [phone, setPhone] = useState(() => getUserProfile()?.phone || '');
+  const [email, setEmail] = useState(() => getUserProfile()?.email || '');
+  const [city, setCity] = useState(() => getUserProfile()?.city || '');
   const [course, setCourse] = useState('');
   const [err, setErr] = useState('');
   const [done, setDone] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    setName(val);
+    saveUserProfile({ name: val });
+    if (err) setErr('');
+  };
+
   const handlePhoneChange = (e) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
     setPhone(raw);
+    saveUserProfile({ phone: raw });
+    if (err) setErr('');
+  };
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value;
+    setEmail(val);
+    saveUserProfile({ email: val });
+    if (err) setErr('');
+  };
+
+  const handleCityChange = (e) => {
+    const val = e.target.value;
+    setCity(val);
+    saveUserProfile({ city: val });
     if (err) setErr('');
   };
 
@@ -1126,6 +1182,14 @@ function CertificateApplyModalContent({ onClose }) {
     }
 
     setErr('');
+
+    // Persist details
+    saveUserProfile({
+      name: name.trim(),
+      phone,
+      email: email.trim(),
+      city: city.trim(),
+    });
 
     // Instant UI transition - zero latency for user
     setDone(true);
@@ -1219,10 +1283,7 @@ function CertificateApplyModalContent({ onClose }) {
                 autoComplete="name"
                 placeholder="As it should appear on the certificate"
                 value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  if (err) setErr('');
-                }}
+                onChange={handleNameChange}
               />
             </label>
             <label className="field">
@@ -1243,10 +1304,7 @@ function CertificateApplyModalContent({ onClose }) {
                 autoComplete="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (err) setErr('');
-                }}
+                onChange={handleEmailChange}
               />
             </label>
             <label className="field">
@@ -1255,10 +1313,7 @@ function CertificateApplyModalContent({ onClose }) {
                 type="text"
                 placeholder="e.g. Surat"
                 value={city}
-                onChange={(e) => {
-                  setCity(e.target.value);
-                  if (err) setErr('');
-                }}
+                onChange={handleCityChange}
               />
             </label>
           </div>
@@ -1308,10 +1363,10 @@ function CertificateApplyModalContent({ onClose }) {
 
 /* ================= COURSE BROCHURE DOWNLOAD MODAL ================= */
 function BrochureModalContent({ onClose }) {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [address, setAddress] = useState('');
+  const [name, setName] = useState(() => getUserProfile()?.name || '');
+  const [phone, setPhone] = useState(() => getUserProfile()?.phone || '');
+  const [email, setEmail] = useState(() => getUserProfile()?.email || '');
+  const [address, setAddress] = useState(() => getUserProfile()?.address || '');
   const [course, setCourse] = useState('');
   const [err, setErr] = useState('');
   const [done, setDone] = useState(false);
@@ -1352,9 +1407,31 @@ function BrochureModalContent({ onClose }) {
     }
   };
 
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    setName(val);
+    saveUserProfile({ name: val });
+    if (err) setErr('');
+  };
+
   const handlePhoneChange = (e) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
     setPhone(raw);
+    saveUserProfile({ phone: raw });
+    if (err) setErr('');
+  };
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value;
+    setEmail(val);
+    saveUserProfile({ email: val });
+    if (err) setErr('');
+  };
+
+  const handleAddressChange = (e) => {
+    const val = e.target.value;
+    setAddress(val);
+    saveUserProfile({ address: val });
     if (err) setErr('');
   };
 
@@ -1382,6 +1459,14 @@ function BrochureModalContent({ onClose }) {
     }
 
     setErr('');
+
+    // Persist details
+    saveUserProfile({
+      name: name.trim(),
+      phone,
+      email: email.trim(),
+      address: address.trim(),
+    });
 
     // Deliver brochure immediately to user
     deliverBrochure().catch((pdfErr) => {
@@ -1489,10 +1574,7 @@ function BrochureModalContent({ onClose }) {
                 autoComplete="name"
                 placeholder="Your full name"
                 value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  if (err) setErr('');
-                }}
+                onChange={handleNameChange}
               />
             </label>
             <label className="field">
@@ -1513,10 +1595,7 @@ function BrochureModalContent({ onClose }) {
                 autoComplete="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (err) setErr('');
-                }}
+                onChange={handleEmailChange}
               />
             </label>
             <label className="field">
@@ -1526,10 +1605,7 @@ function BrochureModalContent({ onClose }) {
                 autoComplete="street-address"
                 placeholder="City, State"
                 value={address}
-                onChange={(e) => {
-                  setAddress(e.target.value);
-                  if (err) setErr('');
-                }}
+                onChange={handleAddressChange}
               />
             </label>
           </div>

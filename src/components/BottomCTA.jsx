@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function BottomCTA({ onOpenDemo }) {
+export default function BottomCTA({ onOpenDemo, onNavigate }) {
   return (
     <section id="cta" className="wrap section section--tight">
       <div className="surface">
@@ -26,7 +26,17 @@ export default function BottomCTA({ onOpenDemo }) {
             <a className="btn btn-lime" href="#price" style={{ minHeight: '52px' }}>
               Enroll Now – ₹2,999
             </a>
-            <a className="btn btn-ghost" href="#test" style={{ minHeight: '52px' }}>
+            <a
+              className="btn btn-ghost"
+              href="/assessment"
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault();
+                  onNavigate('assessment');
+                }
+              }}
+              style={{ minHeight: '52px' }}
+            >
               Discover Your Trainer Level – Free Test
             </a>
             <button

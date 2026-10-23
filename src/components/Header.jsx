@@ -1,25 +1,64 @@
 import React, { useState } from 'react';
 
 const NAV_LINKS = [
-  { href: '#test', label: 'Trainer Level Test' },
-  { href: '#courses', label: 'Courses' },
-  { href: '#journey', label: 'Learning Journey' },
-  { href: '#app', label: 'Academy App' },
-  { href: '#inpta', label: 'INPTA' },
-  { href: '#faq', label: 'FAQ' },
+  { key: 'courses', href: '#courses', label: 'Courses' },
+  { key: 'assessment', href: '/assessment', label: 'Assessment' },
+  { key: 'journey', href: '#journey', label: 'Learning Journey' },
+  { key: 'app', href: '#app', label: 'Academy App' },
+  { key: 'inpta', href: '#inpta', label: 'INPTA' },
+  { key: 'faq', href: '#faq', label: 'FAQ' },
 ];
 
-export default function Header({ onOpenDemo }) {
+export default function Header({ onOpenDemo, currentPage = 'home', onNavigate }) {
   const [open, setOpen] = useState(false);
 
   const close = () => setOpen(false);
+
+  const handleLinkClick = (link, e) => {
+    e.preventDefault();
+    close();
+    if (link.key === 'assessment') {
+      if (onNavigate) {
+        onNavigate('assessment');
+      } else {
+        window.location.href = '/assessment';
+      }
+    } else {
+      const targetHash = link.href.replace('#', '');
+      if (onNavigate) {
+        onNavigate('home', targetHash);
+      } else {
+        window.location.href = `/#${targetHash}`;
+      }
+    }
+  };
+
+  const handleLogoClick = (e) => {
+    e.preventDefault();
+    close();
+    if (onNavigate) {
+      onNavigate('home');
+    } else {
+      window.location.href = '/';
+    }
+  };
+
+  const handleEnrollClick = (e) => {
+    e.preventDefault();
+    close();
+    if (onNavigate) {
+      onNavigate('home', 'price');
+    } else {
+      window.location.href = '/#price';
+    }
+  };
 
   return (
     <header className="top">
       <div className="wrap nav">
         <a
-          href="#top"
-          onClick={close}
+          href="/"
+          onClick={handleLogoClick}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -35,17 +74,22 @@ export default function Header({ onOpenDemo }) {
             width="42"
             height="42"
           />
-          {/* <span className="serif" style={{ fontSize: '20px' }}>
-            FGIIT
-          </span> */}
         </a>
 
         <nav className={`nav-links${open ? ' open' : ''}`} aria-label="Main">
-          {NAV_LINKS.map((link) => (
-            <a key={link.href} href={link.href} onClick={close}>
-              {link.label}
-            </a>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const isActive = link.key === 'assessment' && currentPage === 'assessment';
+            return (
+              <a
+                key={link.key}
+                href={link.href}
+                className={isActive ? 'active' : ''}
+                onClick={(e) => handleLinkClick(link, e)}
+              >
+                {link.label}
+              </a>
+            );
+          })}
           <button
             type="button"
             className="btn btn-ghost nav-demo"
@@ -63,6 +107,7 @@ export default function Header({ onOpenDemo }) {
           <a
             className="btn btn-lime"
             href="#price"
+            onClick={handleEnrollClick}
             style={{ minHeight: '44px', padding: '0 18px', whiteSpace: 'nowrap' }}
           >
             Enroll · ₹2,999

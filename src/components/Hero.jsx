@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Hero({ onOpenDemo }) {
+export default function Hero({ onOpenDemo, onNavigate }) {
   return (
     <section id="top" style={{ background: 'linear-gradient(180deg, #F4F9E6 0%, #FFFFFF 100%)' }}>
       <div
@@ -66,6 +66,7 @@ export default function Hero({ onOpenDemo }) {
 
           {/* Balanced Subtitle */}
           <p
+            className="hero-subtitle hide-sm"
             style={{
               margin: 0,
               fontSize: 'clamp(17px, 1.8vw, 19px)',
@@ -102,7 +103,13 @@ export default function Hero({ onOpenDemo }) {
           </div>
 
           <a
-            href="#test"
+            href="/assessment"
+            onClick={(e) => {
+              if (onNavigate) {
+                e.preventDefault();
+                onNavigate('assessment');
+              }
+            }}
             style={{
               fontSize: '13.5px',
               fontWeight: 600,
@@ -110,6 +117,7 @@ export default function Hero({ onOpenDemo }) {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
+              cursor: 'pointer',
             }}
           >
             <span>Discover Your Trainer Level in 4 mins (Free Assessment)</span>

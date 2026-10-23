@@ -1,7 +1,7 @@
 import React from 'react';
 import { CONFIG } from '../data/fgiitData';
 
-export default function Footer() {
+export default function Footer({ onNavigate }) {
   return (
     <footer
       style={{
@@ -58,15 +58,36 @@ export default function Footer() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '14px' }}>
-          <b style={{ color: 'var(--ink)', marginBottom: '4px' }}>FGIIT Academy app</b>
+          <b style={{ color: 'var(--ink)', marginBottom: '4px' }}>Quick links</b>
           <a href={CONFIG.APP_PLAY_URL} target="_blank" rel="noopener noreferrer" className="footer-link">
             Google Play
           </a>
           <a href={CONFIG.APP_APPLE_URL} target="_blank" rel="noopener noreferrer" className="footer-link">
             App Store
           </a>
-          <a href="#courses" className="footer-link">
+          <a
+            href="#courses"
+            onClick={(e) => {
+              if (onNavigate) {
+                e.preventDefault();
+                onNavigate('home', 'courses');
+              }
+            }}
+            className="footer-link"
+          >
             Courses &amp; fees
+          </a>
+          <a
+            href="/assessment"
+            onClick={(e) => {
+              if (onNavigate) {
+                e.preventDefault();
+                onNavigate('assessment');
+              }
+            }}
+            className="footer-link"
+          >
+            Trainer Assessment
           </a>
         </div>
       </div>

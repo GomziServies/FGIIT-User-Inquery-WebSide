@@ -275,6 +275,32 @@ function saveInquiryQueue(queue) {
   } catch {}
 }
 
+/* ================= USER PROFILE AUTO-FILL SYSTEM ================= */
+const USER_PROFILE_KEY = 'fgiit_user_profile_v1';
+
+export function saveUserProfile(profile) {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const existing = getUserProfile() || {};
+    const updated = {
+      ...existing,
+      ...profile,
+      updatedAt: Date.now(),
+    };
+    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(updated));
+  } catch {}
+}
+
+export function getUserProfile() {
+  if (typeof window === 'undefined' || !window.localStorage) return null;
+  try {
+    const raw = localStorage.getItem(USER_PROFILE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 let isQueueProcessing = false;
 
 /**
@@ -613,7 +639,7 @@ export const COURSES = {
     id: 'pl',
     name: 'Powerlifting Coach Masterclass',
     dur: '1.5 months',
-    price: '₹2,999',
+    price: '₹1,999',
     intro:
       'Everything from biomechanics to programming, coaching ethics and competition rules. Zoom sessions on Saturday and Sunday.',
     syllabus: [
@@ -634,7 +660,7 @@ export const COURSES = {
     id: 'gi',
     name: 'Group Instructor Masterclass',
     dur: '1.5 months',
-    price: '₹2,999',
+    price: '₹1,999',
     intro: 'Plan and lead high-energy group classes with confidence.',
     syllabus: [
       'Fundamentals of group training',
@@ -660,7 +686,7 @@ export const COURSES = {
     id: 'ir',
     name: 'Injury Rehabilitation Masterclass',
     dur: '1.5 months',
-    price: '₹2,999',
+    price: '₹1,999',
     intro:
       'Prevent and manage gym and sports injuries with the right exercise and hands-on techniques.',
     syllabus: [
