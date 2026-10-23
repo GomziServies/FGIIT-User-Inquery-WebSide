@@ -1,4 +1,5 @@
 import React from 'react';
+import Icon from './Icons';
 
 export default function Hero({ onOpenDemo, onNavigate }) {
   return (
@@ -175,7 +176,7 @@ export default function Hero({ onOpenDemo, onNavigate }) {
               border: '1px solid rgba(255, 255, 255, 0.9)',
             }}
           >
-            <span style={{ fontSize: '20px', lineHeight: 1 }}>🏆</span>
+            <Icon name="trophy" size={20} style={{ color: 'var(--deep)', flexShrink: 0 }} />
             <div>
               <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ink)' }}>
                 100% Placement

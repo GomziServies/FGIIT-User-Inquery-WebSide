@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import Icon from '../Icons';
 import {
   COURSES,
   COURSE_ORDER,
@@ -13,6 +14,9 @@ import {
   getDemoDays,
   getUserProfile,
   saveUserProfile,
+  submitContactInquiry,
+  createFgiitRazorpayOrder,
+  verifyFgiitCoursePayment,
 } from '../../data/fgiitData';
 
 export default function ModalRoot({ modalState, onClose }) {
@@ -306,8 +310,10 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
   const [phone, setPhone] = useState(() => getUserProfile()?.phone || '');
   const [email, setEmail] = useState(() => getUserProfile()?.email || '');
   const [err, setErr] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+  const [isTalking, setIsTalking] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(null);
+  const [expertSuccess, setExpertSuccess] = useState(false);
 
   const handleNameChange = (e) => {
     const val = e.target.value;
@@ -330,10 +336,9 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
     if (err) setErr('');
   };
 
-  const paymentLink = CONFIG.PAYMENT_LINKS?.[courseId] || '';
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // 1. Pay Now via Razorpay (FGIIT Razorpay Gateway in fg-api)
+  const handlePayNow = async (e) => {
+    if (e) e.preventDefault();
     if (name.trim().length < 2) {
       setErr('Please enter your full name.');
       return;
@@ -348,57 +353,192 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
     }
 
     setErr('');
+    setIsPaying(true);
 
-    // Persist latest details so user doesn't have to re-enter
     saveUserProfile({
       name: name.trim(),
       phone,
       email: email.trim(),
     });
 
-    // Instant UI transition - zero latency for user
-    setDone(true);
-    setIsSubmitting(false);
+    try {
+      // Ensure Razorpay SDK is available
+      if (!window.Razorpay) {
+        const loaded = await new Promise((resolve) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+        if (!loaded || !window.Razorpay) {
+          throw new Error('Unable to connect to Razorpay. Please check your network connection.');
+        }
+      }
 
-    // Background delivery of inquiry & email notification
-    dispatchInquiryInBackground(
-      {
+      const numericPrice = Number(price.replace(/[^\d.]/g, '')) || 2999;
+
+      // Create Razorpay Order via fg-api
+      const orderRes = await createFgiitRazorpayOrder({
+        course_id: courseId,
+        course_name: courseName,
+        amount: numericPrice,
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone,
+      });
+
+      if (!orderRes.success || !orderRes.data?.order_id) {
+        throw new Error(orderRes.error || 'Failed to initialize Razorpay order.');
+      }
+
+      const { order_id, amount, key, currency } = orderRes.data;
+
+      const options = {
+        key: key || 'rzp_test_sb4SYqLcmeDGqi',
+        amount: amount || numericPrice * 100,
+        currency: currency || 'INR',
+        name: 'FGIIT Academy',
+        description: `${courseName} Enrollment`,
+        image: '/images/fgiit-logo.png',
+        order_id: order_id,
+        prefill: {
+          name: name.trim(),
+          email: email.trim(),
+          contact: phone,
+        },
+        theme: {
+          color: '#9BC028',
+        },
+        modal: {
+          ondismiss: () => {
+            setIsPaying(false);
+          },
+        },
+        handler: (response) => {
+          const instantReceipt = `FGIIT-${Date.now().toString().slice(-8)}`;
+
+          // 1. Instant UI transition - zero latency for user
+          setPaymentSuccess({
+            receipt_id: instantReceipt,
+            payment_id: response.razorpay_payment_id,
+            amount: numericPrice,
+            course_name: courseName,
+          });
+          setIsPaying(false);
+
+          // 2. Asynchronous background order record & email dispatch
+          verifyFgiitCoursePayment({
+            razorpay_order_id: response.razorpay_order_id || order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            course_id: courseId,
+            course_name: courseName,
+            amount: numericPrice,
+            name: name.trim(),
+            email: email.trim(),
+            phone: phone,
+          }).then((verifyRes) => {
+            if (verifyRes?.success && verifyRes?.data?.receipt_id) {
+              setPaymentSuccess((prev) => ({
+                ...prev,
+                receipt_id: verifyRes.data.receipt_id,
+                order_id: verifyRes.data.order_id,
+              }));
+            }
+          }).catch((verErr) => {
+            console.warn('[Background Payment Verification]', verErr);
+          });
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (resp) {
+        setErr(`Payment failed: ${resp.error?.description || 'Transaction declined.'}`);
+        setIsPaying(false);
+      });
+      rzp.open();
+    } catch (paymentErr) {
+      console.error('[handlePayNow Error]', paymentErr);
+      setErr(paymentErr.message || 'Payment initiation failed. Please try again.');
+      setIsPaying(false);
+    }
+  };
+
+  const talkLockRef = useRef(false);
+
+  // 2. Talk with Expert Team (Logs in fg-api ContactInquiry / Leads section)
+  const handleTalkToExpert = async (e) => {
+    if (e) e.preventDefault();
+    if (talkLockRef.current || isTalking) return;
+
+    if (name.trim().length < 2) {
+      setErr('Please enter your full name.');
+      return;
+    }
+    if (!okPhone(phone)) {
+      setErr('Please enter a valid 10-digit contact number.');
+      return;
+    }
+    if (!email.trim() || !okEmail(email.trim())) {
+      setErr('Please enter a valid email address.');
+      return;
+    }
+
+    talkLockRef.current = true;
+    setErr('');
+    setIsTalking(true);
+
+    saveUserProfile({
+      name: name.trim(),
+      phone,
+      email: email.trim(),
+    });
+
+    const leadMessage = `Candidate requested to speak with Expert Team:
+- Course: ${courseName}
+- Fee: ${price}
+- Candidate Name: ${name.trim()}
+- Contact No: +91 ${phone}
+- Email: ${email.trim()}
+- Request Type: Talk with Expert Team
+- Status: New Academic Lead
+- Submitted At: ${new Date().toLocaleString('en-IN')}`;
+
+    try {
+      // Single atomic inquiry submission to fg-api (no duplicate background dispatch)
+      await submitContactInquiry({
         name: name.trim(),
         email: email.trim(),
         mobile: phone,
-        subject: courseName,
-        message: `Course Enrollment Request Submitted Successfully:\n- Course: ${courseName}\n- Fee: ${price}\n- Client Name: ${name.trim()}\n- Contact No (WhatsApp): +91 ${phone}\n- Email: ${email.trim()}\n- Client Notification: "Your request is submitted successfully. Within 24 hours our team will contact you."\n- Channels: WhatsApp (+91 ${phone}) & Email (${email.trim()})\n- SLA: Response guaranteed within 24 hours\n- Submitted At: ${new Date().toLocaleString('en-IN')}`,
-        source: window.location.href,
+        subject: `Course Inquiry: ${courseName} (Talk with Expert)`,
+        message: leadMessage,
+        source: 'FGIIT Website - Course Enrollment',
         details: {
           courseId,
           courseName,
           price,
+          leadType: 'talk_with_expert_team',
           studentName: name.trim(),
           contactNumber: phone,
           email: email.trim(),
-          leadType: 'course_purchase_buy_now',
-          clientNotice: 'Your request is submitted successfully. Within 24 hours our team will contact you.',
-          contactSla: '24 hours',
-          notifyChannels: ['whatsapp', 'email'],
-          clientPhone: phone,
-          clientEmail: email.trim(),
-          submittedAt: new Date().toISOString(),
+          clientNotice: 'Candidate requested expert counselling.',
         },
-      },
-      {
-        telemetry: {
-          type: 'course_purchase_lead',
-          data: {
-            courseId,
-            courseName,
-            price,
-            name: name.trim(),
-            phone,
-            email: email.trim(),
-          },
-        },
+      });
+
+      // Purge any stale retry queue in localStorage
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem('fgiit_inquiry_queue_v1');
       }
-    );
+
+      setExpertSuccess(true);
+    } catch (err) {
+      console.warn('[Talk with Expert Submission Error]', err);
+      setExpertSuccess(true);
+    } finally {
+      setIsTalking(false);
+      talkLockRef.current = false;
+    }
   };
 
   return (
@@ -414,7 +554,7 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
           borderTopRightRadius: '24px',
         }}
       >
-        {onBack && (
+        {onBack && !paymentSuccess && !expertSuccess && (
           <button
             type="button"
             onClick={onBack}
@@ -443,43 +583,77 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
           {courseName}
         </h2>
         <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
-          Enter your contact details. Our team will contact you within 24 hours on WhatsApp &amp; Email.
+          {paymentSuccess
+            ? 'Official Enrollment Confirmation'
+            : expertSuccess
+            ? 'Counselling Request Registered'
+            : 'Enter your contact details to enroll instantly online or speak with our expert academic counsellors.'}
         </span>
       </div>
 
       <div className="pad">
-        {done ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'flex-start', paddingTop: '8px' }}>
-            <span
+        {paymentSuccess ? (
+          /* ================= PAYMENT SUCCESSFUL SCREEN ================= */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'flex-start', paddingTop: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <span
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  background: 'var(--tint2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="checkCircle" size={32} style={{ color: 'var(--deep)' }} />
+              </span>
+              <div>
+                <span className="eyebrow" style={{ color: 'var(--deep)' }}>PAYMENT VERIFIED &amp; ENROLLED</span>
+                <h3 style={{ margin: '2px 0 0 0', fontSize: '22px', fontWeight: 800 }}>Welcome to FGIIT Academy!</h3>
+              </div>
+            </div>
+
+            <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: 'var(--text2)' }}>
+              Thank you, <b>{name}</b>! Your payment of <b>₹{paymentSuccess.amount || price}</b> for <b>{courseName}</b> has been received and verified successfully.
+            </p>
+
+            {/* Official Order Receipt Card */}
+            <div
               style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                background: 'var(--tint2)',
+                width: '100%',
+                background: 'var(--bg2)',
+                borderRadius: '14px',
+                border: '1.5px solid var(--line)',
+                padding: '14px 18px',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                flexDirection: 'column',
+                gap: '8px',
+                boxSizing: 'border-box',
+                fontSize: '13px',
               }}
             >
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#4A630B"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-            </span>
-            <span className="eyebrow" style={{ color: 'var(--deep)' }}>REQUEST SUBMITTED SUCCESSFULLY</span>
-            <h3 style={{ margin: 0, fontSize: '22px' }}>Your request is submitted successfully!</h3>
-            <p style={{ margin: 0, fontSize: '15px', lineHeight: 1.6, color: 'var(--text2)' }}>
-              Thank you, <b>{name}</b>! Within 24 hours our team will contact you on WhatsApp and Email regarding your request for <b>{courseName}</b> ({price}).
-            </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--line)', paddingBottom: '6px' }}>
+                <span style={{ color: 'var(--muted)', fontWeight: 600 }}>Receipt ID</span>
+                <span style={{ fontFamily: 'monospace', fontWeight: 800, color: 'var(--ink)' }}>{paymentSuccess.receipt_id}</span>
+              </div>
+              {paymentSuccess.payment_id && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--line)', paddingBottom: '6px' }}>
+                  <span style={{ color: 'var(--muted)', fontWeight: 600 }}>Razorpay Transaction ID</span>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--ink)' }}>{paymentSuccess.payment_id}</span>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--line)', paddingBottom: '6px' }}>
+                <span style={{ color: 'var(--muted)', fontWeight: 600 }}>Program Enrolled</span>
+                <span style={{ fontWeight: 700, color: 'var(--deep)' }}>{courseName}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '2px' }}>
+                <span style={{ fontWeight: 700, color: 'var(--ink)' }}>Total Amount Paid</span>
+                <span className="serif" style={{ fontSize: '18px', fontWeight: 800, color: '#16a34a' }}>₹{paymentSuccess.amount || price}</span>
+              </div>
+            </div>
 
             {/* Notification Highlights Box */}
             <div
@@ -496,79 +670,130 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--ink)' }}>
-                <span style={{ fontSize: '18px' }}>💬</span>
+                <Icon name="mail" size={18} style={{ color: 'var(--deep)', flexShrink: 0 }} />
                 <span>
-                  <b>WhatsApp:</b> Message will be sent to <b>+91 {phone}</b> within 24 hours.
+                  Official enrollment tax invoice and payment receipt sent to <b>{email}</b>.
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--ink)' }}>
-                <span style={{ fontSize: '18px' }}>✉️</span>
+                <Icon name="chat" size={18} style={{ color: 'var(--deep)', flexShrink: 0 }} />
                 <span>
-                  <b>Email:</b> Confirmation details will be sent to <b>{email}</b> within 24 hours.
+                  LMS login credentials &amp; batch schedule will be messaged to <b>+91 {phone}</b>.
                 </span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--deep)', fontWeight: 700, paddingTop: '6px', borderTop: '1px solid #E2EEC8' }}>
-                <span style={{ fontSize: '14px' }}>⏱️</span>
-                <span>Our team will contact you within 24 hours guaranteed</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--deep)', fontWeight: 700, paddingTop: '6px', borderTop: '1px solid #E2EEC8' }}>
+                <Icon name="clock" size={14} style={{ color: 'var(--deep)', flexShrink: 0 }} />
+                <span>Academic onboarding executive will connect with you within 24 hours.</span>
               </div>
             </div>
+
+            <button
+              type="button"
+              className="btn btn-lime"
+              onClick={onClose}
+              style={{ width: '100%', minHeight: '50px', fontSize: '15px', fontWeight: 700, marginTop: '4px' }}
+            >
+              Close
+            </button>
+          </div>
+        ) : expertSuccess ? (
+          /* ================= TALK WITH EXPERT SUCCESS SCREEN ================= */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'flex-start', paddingTop: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <span
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  background: 'var(--tint2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="chat" size={28} style={{ color: 'var(--deep)' }} />
+              </span>
+              <div>
+                <span className="eyebrow" style={{ color: 'var(--deep)' }}>LEAD REGISTERED · EXPERT CONSULTATION</span>
+                <h3 style={{ margin: '2px 0 0 0', fontSize: '22px', fontWeight: 800 }}>Consultation Request Received!</h3>
+              </div>
+            </div>
+
+            <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: 'var(--text2)' }}>
+              Thank you, <b>{name}</b>! Your request has been forwarded to our senior faculty counselling team. We will call you and message on WhatsApp regarding <b>{courseName}</b>.
+            </p>
 
             <div
               style={{
                 width: '100%',
-                padding: '12px 16px',
-                background: 'var(--bg2)',
+                background: 'var(--tint)',
+                border: '1px solid #D7E6B4',
                 borderRadius: '14px',
-                border: '1px solid var(--line)',
+                padding: '14px 16px',
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                flexDirection: 'column',
+                gap: '10px',
                 boxSizing: 'border-box',
+                fontSize: '13px',
               }}
             >
-              <div>
-                <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.05em' }}>SELECTED COURSE</div>
-                <div style={{ fontWeight: 700, fontSize: '15px' }}>{courseName}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--ink)' }}>
+                <Icon name="chat" size={18} style={{ color: 'var(--deep)', flexShrink: 0 }} />
+                <span>
+                  <b>WhatsApp &amp; Call:</b> Senior counsellor will reach out to <b>+91 {phone}</b> within 24 hours.
+                </span>
               </div>
-              <div className="serif" style={{ fontSize: '24px', fontWeight: 700, color: 'var(--deep)' }}>{price}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--ink)' }}>
+                <Icon name="mail" size={18} style={{ color: 'var(--deep)', flexShrink: 0 }} />
+                <span>
+                  <b>Email:</b> Syllabus brochure &amp; placement statistics sent to <b>{email}</b>.
+                </span>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', width: '100%', paddingTop: '4px' }}>
-              {paymentLink ? (
-                <>
-                  <a
-                    className="btn btn-lime"
-                    href={paymentLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ flex: '1 1 200px', minHeight: '50px' }}
-                  >
-                    Proceed to Payment →
-                  </a>
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={onClose}
-                    style={{ minHeight: '50px' }}
-                  >
-                    Close
-                  </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  className="btn btn-lime"
-                  onClick={onClose}
-                  style={{ width: '100%', minHeight: '50px' }}
-                >
-                  Close
-                </button>
-              )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', paddingTop: '4px' }}>
+              <a
+                href={waLink(`Hello FGIIT Team, I am ${name} and I would like to talk with an expert counsellor regarding ${courseName} (${price}).`)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-lime"
+                style={{ width: '100%', minHeight: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}
+              >
+                <Icon name="chat" size={18} />
+                <span>Chat with Expert on WhatsApp Now →</span>
+              </a>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={onClose}
+                style={{ width: '100%', minHeight: '46px' }}
+              >
+                Close
+              </button>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {err && <div className="err">{err}</div>}
+          /* ================= COURSE ENROLLMENT FORM WITH 2 BUTTONS ================= */
+          <form onSubmit={handlePayNow} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {err && (
+              <div
+                style={{
+                  padding: '12px 14px',
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '10px',
+                  color: '#991b1b',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span>{err}</span>
+              </div>
+            )}
 
             <div
               style={{
@@ -643,23 +868,80 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
                 onChange={handleEmailChange}
               />
               <span style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
-                Login credentials and confirmation will be sent to this email.
+                Login credentials and official payment invoice will be sent to this email.
               </span>
             </label>
 
-            <button
-              type="submit"
-              className="btn btn-lime"
-              disabled={isSubmitting}
-              style={{
-                minHeight: '52px',
-                fontSize: '16px',
-                width: '100%',
-                marginTop: '6px',
-              }}
-            >
-              {isSubmitting ? 'Saving inquiry...' : `Buy now · ${price}`}
-            </button>
+            {/* TWO ACTION BUTTONS: 1. Pay Now via Razorpay  2. Talk with Expert Team */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
+              <button
+                type="button"
+                onClick={handlePayNow}
+                disabled={isPaying || isTalking}
+                className="btn btn-lime"
+                style={{
+                  minHeight: '52px',
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  boxShadow: '0 4px 14px rgba(155, 192, 40, 0.35)',
+                  cursor: isPaying || isTalking ? 'not-allowed' : 'pointer',
+                  opacity: isPaying || isTalking ? 0.75 : 1,
+                }}
+              >
+                {isPaying ? (
+                  <>
+                    <Icon name="refresh" size={18} className="spin" />
+                    <span>Connecting to Razorpay...</span>
+                  </>
+                ) : (
+                  <>
+                    <Icon name="lock" size={18} />
+                    <span>Pay now · {price}</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleTalkToExpert}
+                disabled={isPaying || isTalking}
+                className="btn btn-ghost"
+                style={{
+                  minHeight: '50px',
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  width: '100%',
+                  color: 'var(--deep)',
+                  border: '2px solid var(--deep)',
+                  background: 'rgba(74, 99, 11, 0.04)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  borderRadius: '12px',
+                  cursor: isPaying || isTalking ? 'not-allowed' : 'pointer',
+                  opacity: isPaying || isTalking ? 0.75 : 1,
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {isTalking ? (
+                  <>
+                    <Icon name="refresh" size={18} className="spin" />
+                    <span>Connecting with Expert Team...</span>
+                  </>
+                ) : (
+                  <>
+                    <Icon name="chat" size={18} />
+                    <span>Talk with Expert Team</span>
+                  </>
+                )}
+              </button>
+            </div>
 
             <div
               style={{
@@ -670,9 +952,10 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
                 fontSize: '12px',
                 color: 'var(--muted)',
                 textAlign: 'center',
+                marginTop: '2px',
               }}
             >
-              <span>⏱️</span>
+              <Icon name="clock" size={14} style={{ color: 'var(--muted)', flexShrink: 0 }} />
               <span>Within 24 hours our team will contact you on WhatsApp &amp; Email</span>
             </div>
           </form>

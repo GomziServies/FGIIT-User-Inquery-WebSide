@@ -210,9 +210,6 @@ export async function submitContactInquiry({
   }
   if (isLocal) {
     endpoints.push('http://127.0.0.1:80/public/v1/contact-inquiry');
-    endpoints.push('http://localhost:80/public/v1/contact-inquiry');
-    endpoints.push('http://127.0.0.1:8080/public/v1/contact-inquiry');
-    endpoints.push('http://localhost:8080/public/v1/contact-inquiry');
   }
   endpoints.push('https://api.fggroup.in/public/v1/contact-inquiry');
 
@@ -231,7 +228,7 @@ export async function submitContactInquiry({
           },
           body: JSON.stringify(payload),
         },
-        2800
+        6000
       );
 
       if (res.ok) {
@@ -394,10 +391,10 @@ if (typeof window !== 'undefined') {
       processInquiryQueue().catch(() => {});
     }
   });
-  // Initial drain
-  setTimeout(() => {
-    processInquiryQueue().catch(() => {});
-  }, 1200);
+  // Clear stale queue on initial mount to avoid firing old retries
+  try {
+    localStorage.removeItem('fgiit_inquiry_queue_v1');
+  } catch {}
 }
 
 export const CATS = [
@@ -962,4 +959,119 @@ export function calculateScore(answers) {
   const weak = cats.slice().sort((a, b) => a.p - b.p).slice(0, 2);
 
   return { score, cats, level, weak, totalQuestions: QUESTIONS.length };
+}
+
+
+/* ================= FGIIT RAZORPAY COURSE ENROLLMENT HELPERS ================= */
+
+/**
+ * Creates a Razorpay Order through fg-api for FGIIT Course Enrollment
+ * Uses FGIIT gateway credentials configured in fg-api .env.development
+ */
+export async function createFgiitRazorpayOrder(params) {
+  const isLocal =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.startsWith('192.168.'));
+
+  const endpoints = [];
+  if (CONFIG.API_URL) {
+    endpoints.push(`${CONFIG.API_URL.replace(/\/+$/, '')}/public/v1/guest-payment/create-fgiit-order`);
+  }
+  if (isLocal) {
+    endpoints.push('http://127.0.0.1:80/public/v1/guest-payment/create-fgiit-order');
+    endpoints.push('http://localhost:80/public/v1/guest-payment/create-fgiit-order');
+    endpoints.push('http://127.0.0.1:8080/public/v1/guest-payment/create-fgiit-order');
+    endpoints.push('http://localhost:8080/public/v1/guest-payment/create-fgiit-order');
+  }
+  endpoints.push('https://api.fggroup.in/public/v1/guest-payment/create-fgiit-order');
+
+  const uniqueEndpoints = [...new Set(endpoints)];
+  let lastError = null;
+
+  for (const url of uniqueEndpoints) {
+    try {
+      const res = await fetchWithTimeout(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(params),
+        },
+        5000
+      );
+
+      if (res.ok) {
+        const json = await res.json();
+        return { success: true, data: json.data || json };
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        lastError = errJson?.message || `HTTP ${res.status}`;
+      }
+    } catch (err) {
+      lastError = err.message;
+    }
+  }
+
+  return { success: false, error: lastError || 'Failed to create payment order' };
+}
+
+/**
+ * Verifies FGIIT Course Payment, records order in OrdersRepo with itemType FITNESS_COURSE
+ * and dispatches official enrollment invoice email via fg-api
+ */
+export async function verifyFgiitCoursePayment(params) {
+  const isLocal =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.startsWith('192.168.'));
+
+  const endpoints = [];
+  if (CONFIG.API_URL) {
+    endpoints.push(`${CONFIG.API_URL.replace(/\/+$/, '')}/public/v1/guest-payment/verify-fgiit-course`);
+  }
+  if (isLocal) {
+    endpoints.push('http://127.0.0.1:80/public/v1/guest-payment/verify-fgiit-course');
+    endpoints.push('http://localhost:80/public/v1/guest-payment/verify-fgiit-course');
+    endpoints.push('http://127.0.0.1:8080/public/v1/guest-payment/verify-fgiit-course');
+    endpoints.push('http://localhost:8080/public/v1/guest-payment/verify-fgiit-course');
+  }
+  endpoints.push('https://api.fggroup.in/public/v1/guest-payment/verify-fgiit-course');
+
+  const uniqueEndpoints = [...new Set(endpoints)];
+  let lastError = null;
+
+  for (const url of uniqueEndpoints) {
+    try {
+      const res = await fetchWithTimeout(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(params),
+        },
+        8000
+      );
+
+      if (res.ok) {
+        const json = await res.json();
+        return { success: true, data: json.data || json };
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        lastError = errJson?.message || `HTTP ${res.status}`;
+      }
+    } catch (err) {
+      lastError = err.message;
+    }
+  }
+
+  return { success: false, error: lastError || 'Failed to verify payment' };
 }

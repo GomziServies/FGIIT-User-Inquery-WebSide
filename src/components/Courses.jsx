@@ -128,7 +128,7 @@ export default function Courses({ onOpenCourse, onOpenBuy }) {
                     borderRadius: '6px',
                   }}
                 >
-                  📚 {c.syllabus.length} Topics
+                  <Icon name="layers" size={13} style={{ color: 'var(--deep)' }} /> {c.syllabus.length} Topics
                 </span>
                 <span
                   style={{
@@ -142,7 +142,7 @@ export default function Courses({ onOpenCourse, onOpenBuy }) {
                     borderRadius: '6px',
                   }}
                 >
-                  📖 Free E-Book
+                  <Icon name="book" size={13} style={{ color: 'var(--deep)' }} /> Free E-Book
                 </span>
               </div>
 
@@ -211,7 +211,7 @@ export default function Courses({ onOpenCourse, onOpenBuy }) {
               color: 'var(--ink)',
             }}
           >
-            ★ BEST VALUE · ALL-IN-ONE PASS
+            BEST VALUE · ALL-IN-ONE PASS
           </span>
           <h3 style={{ margin: 0, fontSize: '22px' }}>Nutri-Trainer Master Combo</h3>
           <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.55, color: 'var(--text2)' }}>
@@ -245,7 +245,7 @@ export default function Courses({ onOpenCourse, onOpenBuy }) {
             }}
             style={{ minHeight: '48px', padding: '0 24px' }}
           >
-            Explore Combo →
+            Explore Combo
           </button>
         </div>
       </div>

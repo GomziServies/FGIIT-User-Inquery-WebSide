@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from './Icons';
 import {
   CATS,
   QUESTIONS,
@@ -399,7 +400,21 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                 marginTop: '4px',
               }}
             >
-              <span style={{ fontSize: '26px', lineHeight: 1 }}>🏆</span>
+              <span
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '10px',
+                  background: 'var(--tint)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--deep)',
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="trophy" size={22} />
+              </span>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--deep)' }}>
                   Your Score: {currentResult.score}/{N} ({Math.round((currentResult.score / N) * 100)}%)
@@ -423,7 +438,21 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                 marginTop: '4px',
               }}
             >
-              <span style={{ fontSize: '24px', lineHeight: 1 }}>🎯</span>
+              <span
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '10px',
+                  background: 'var(--tint)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--deep)',
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="target" size={22} />
+              </span>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ink)' }}>
                   25,000+ Coaches Benchmarked
@@ -627,12 +656,12 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      {/* Round Score Dial / Circular Badge */}
+                      {/* Round Score Dial / Circular Badge - Perfectly Centered */}
                       <div
                         style={{
                           position: 'relative',
-                          width: '66px',
-                          height: '66px',
+                          width: '74px',
+                          height: '74px',
                           borderRadius: '50%',
                           flexShrink: 0,
                           display: 'flex',
@@ -641,9 +670,9 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                         }}
                       >
                         <svg
-                          width="66"
-                          height="66"
-                          viewBox="0 0 68 68"
+                          width="74"
+                          height="74"
+                          viewBox="0 0 74 74"
                           style={{
                             position: 'absolute',
                             inset: 0,
@@ -652,45 +681,68 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                           aria-hidden="true"
                         >
                           <circle
-                            cx="34"
-                            cy="34"
-                            r="29"
+                            cx="37"
+                            cy="37"
+                            r="32"
                             fill="none"
                             stroke="#DDE8C4"
-                            strokeWidth="4"
+                            strokeWidth="4.5"
                           />
                           <circle
-                            cx="34"
-                            cy="34"
-                            r="29"
+                            cx="37"
+                            cy="37"
+                            r="32"
                             fill="none"
                             stroke="var(--lime)"
-                            strokeWidth="4"
+                            strokeWidth="4.5"
                             strokeLinecap="round"
-                            strokeDasharray={`${((currentResult.score / N) * 182.21).toFixed(1)} 182.21`}
+                            strokeDasharray={`${((currentResult.score / N) * 201.06).toFixed(1)} 201.06`}
                           />
                         </svg>
                         <div
                           style={{
-                            width: '52px',
-                            height: '52px',
+                            width: '58px',
+                            height: '58px',
                             borderRadius: '50%',
                             background: 'var(--deep)',
                             color: '#FFFFFF',
                             display: 'flex',
-                            flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 3px 10px rgba(74, 99, 11, 0.28)',
+                            boxShadow: '0 4px 12px rgba(74, 99, 11, 0.28)',
                             zIndex: 1,
                           }}
                         >
-                          <span style={{ fontSize: '20px', fontWeight: 900, lineHeight: 1 }}>
-                            {currentResult.score}
-                          </span>
-                          <span style={{ fontSize: '10px', opacity: 0.85, fontWeight: 700 }}>
-                            / {N}
-                          </span>
+                          <div
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'baseline',
+                              justifyContent: 'center',
+                              gap: '1.5px',
+                              transform: 'translateY(-1px)',
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: '22px',
+                                fontWeight: 900,
+                                lineHeight: 1,
+                                color: '#FFFFFF',
+                              }}
+                            >
+                              {currentResult.score}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                lineHeight: 1,
+                                color: 'var(--lime)',
+                              }}
+                            >
+                              /{N}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
@@ -722,11 +774,11 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                         </div>
                         <div
                           style={{
-                            fontSize: '22px',
+                            fontSize: '24px',
                             fontWeight: 800,
                             color: 'var(--ink)',
                             fontFamily: 'var(--font-heading)',
-                            marginTop: '2px',
+                            marginTop: '3px',
                             lineHeight: 1.2,
                           }}
                         >
@@ -768,7 +820,7 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                           e.currentTarget.style.background = '#FFFFFF';
                         }}
                       >
-                        <span>📊</span>
+                        <Icon name="chart" size={16} style={{ color: 'var(--deep)' }} />
                         <span>View Detailed Breakdown</span>
                       </button>
                     )}
@@ -828,7 +880,8 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                     marginBottom: '8px',
                   }}
                 >
-                  🎉 All 15 Questions Answered
+                  <Icon name="checkCircle" size={14} style={{ color: 'var(--deep)' }} />
+                  <span>All 15 Questions Answered</span>
                 </div>
                 <h3
                   style={{
@@ -922,7 +975,7 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                   color: 'var(--muted)',
                 }}
               >
-                <span>🔒</span>
+                <Icon name="lock" size={15} style={{ color: 'var(--deep)', flexShrink: 0 }} />
                 <span>Your contact details are strictly confidential. No spam guaranteed.</span>
               </div>
 
@@ -1034,17 +1087,30 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                     type="button"
                     className="btn btn-ghost"
                     onClick={handleDownloadPDF}
-                    style={{ minHeight: '52px', padding: '0 22px' }}
+                    style={{
+                      minHeight: '52px',
+                      padding: '0 22px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
                   >
-                    📄 Download PDF Report
+                    <Icon name="download" size={16} />
+                    <span>Download PDF Report</span>
                   </button>
                   <button
                     type="button"
                     className="btn btn-ghost"
                     onClick={handleRetake}
-                    style={{ minHeight: '52px' }}
+                    style={{
+                      minHeight: '52px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
                   >
-                    ↺ Retake Test
+                    <Icon name="refresh" size={16} />
+                    <span>Retake Test</span>
                   </button>
                 </div>
               </div>

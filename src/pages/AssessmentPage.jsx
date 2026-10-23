@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import CoachLevelQuiz from '../components/CoachLevelQuiz';
+import Icon from '../components/Icons';
 
 export default function AssessmentPage({ onOpenReport, onNavigate, onOpenDemo }) {
   useEffect(() => {
@@ -51,7 +52,8 @@ export default function AssessmentPage({ onOpenReport, onNavigate, onOpenDemo })
                 gap: '4px',
               }}
             >
-              ← Back to Home
+              <Icon name="chevronLeft" size={15} />
+              <span>Back to Home</span>
             </a>
             <span>/</span>
             <span style={{ color: 'var(--ink)', fontWeight: 600 }}>Trainer Assessment</span>
@@ -126,11 +128,11 @@ export default function AssessmentPage({ onOpenReport, onNavigate, onOpenDemo })
               }}
             >
               {[
-                { icon: '⏱', label: 'Takes 4 Minutes' },
-                { icon: '📊', label: '7 Fitness Domains' },
-                { icon: '📄', label: 'Instant PDF Report' },
-                { icon: '🏆', label: 'Certified Tier Score' },
-                { icon: '💬', label: 'WhatsApp Delivery' },
+                { icon: 'clock', label: 'Takes 4 Minutes' },
+                { icon: 'chart', label: '7 Fitness Domains' },
+                { icon: 'fileText', label: 'Instant PDF Report' },
+                { icon: 'trophy', label: 'Certified Tier Score' },
+                { icon: 'chat', label: 'WhatsApp Delivery' },
               ].map((badge, idx) => (
                 <div
                   key={idx}
@@ -148,7 +150,7 @@ export default function AssessmentPage({ onOpenReport, onNavigate, onOpenDemo })
                     boxShadow: '0 2px 6px rgba(11, 18, 16, 0.03)',
                   }}
                 >
-                  <span>{badge.icon}</span>
+                  <Icon name={badge.icon} size={16} style={{ color: 'var(--deep)' }} />
                   <span>{badge.label}</span>
                 </div>
               ))}
