@@ -13,7 +13,7 @@ export default function Courses({ onOpenCourse, onOpenBuy }) {
   });
 
   return (
-    <section id="courses" className="wrap section">
+    <section id="courses" className="wrap section" style={{ scrollMarginTop: '80px' }}>
       <div className="head" style={{ gap: '14px' }}>
         <span className="eyebrow">Course selection</span>
         <h2>Choose the Course That Fits Your Goals</h2>

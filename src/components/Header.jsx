@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { smoothScrollTo } from '../utils/scroll';
 
 const NAV_LINKS = [
   { key: 'courses', href: '#courses', label: 'Courses' },
@@ -25,10 +26,11 @@ export default function Header({ onOpenDemo, currentPage = 'home', onNavigate })
       }
     } else {
       const targetHash = link.href.replace('#', '');
-      if (onNavigate) {
+      if (currentPage !== 'home' && onNavigate) {
         onNavigate('home', targetHash);
       } else {
-        window.location.href = `/#${targetHash}`;
+        window.history.pushState({ page: 'home' }, '', `/#${targetHash}`);
+        smoothScrollTo(targetHash);
       }
     }
   };
@@ -46,10 +48,11 @@ export default function Header({ onOpenDemo, currentPage = 'home', onNavigate })
   const handleEnrollClick = (e) => {
     e.preventDefault();
     close();
-    if (onNavigate) {
-      onNavigate('home', 'price');
+    if (currentPage !== 'home' && onNavigate) {
+      onNavigate('home', 'courses');
     } else {
-      window.location.href = '/#price';
+      window.history.pushState({ page: 'home' }, '', '/#courses');
+      smoothScrollTo('courses');
     }
   };
 
@@ -106,7 +109,7 @@ export default function Header({ onOpenDemo, currentPage = 'home', onNavigate })
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <a
             className="btn btn-lime"
-            href="#price"
+            href="#courses"
             onClick={handleEnrollClick}
             style={{ minHeight: '44px', padding: '0 18px', whiteSpace: 'nowrap' }}
           >

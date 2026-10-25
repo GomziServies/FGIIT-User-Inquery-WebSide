@@ -1,8 +1,15 @@
 import React from 'react';
 import { INCLUDES, ACCREDITATION_NOTE, CONFIG } from '../data/fgiitData';
 import Icon from './Icons';
+import { smoothScrollTo } from '../utils/scroll';
 
-export default function Pricing({ onOpenDemo }) {
+export default function Pricing({ onOpenDemo, onNavigate }) {
+  const handleEnrollClick = (e) => {
+    e.preventDefault();
+    window.history.pushState({ page: 'home' }, '', '/#courses');
+    smoothScrollTo('courses');
+  };
+
   return (
     <section id="price" className="wrap section section--flush-bottom">
       <div className="head">
@@ -147,6 +154,7 @@ export default function Pricing({ onOpenDemo }) {
               <a
                 className="btn btn-lime"
                 href="#courses"
+                onClick={handleEnrollClick}
                 style={{ minHeight: '52px', flex: '1 1 180px' }}
               >
                 Enroll Now – ₹2,999

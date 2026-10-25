@@ -16,6 +16,7 @@ import BottomCTA from './components/BottomCTA';
 import Footer from './components/Footer';
 import WhatsAppFloat from './components/WhatsAppFloat';
 import AssessmentPage from './pages/AssessmentPage';
+import { smoothScrollTo } from './utils/scroll';
 
 // Code-split ModalRoot chunk to keep initial landing page load instant (< 60kB)
 const ModalRoot = React.lazy(() => import('./components/modals/ModalRoot'));
@@ -48,11 +49,10 @@ export default function App() {
       setCurrentPage('home');
       if (targetHash) {
         setTimeout(() => {
-          const el = document.getElementById(targetHash);
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 60);
+          smoothScrollTo(targetHash);
+        }, 50);
       } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        smoothScrollTo(document.body, 0);
       }
     }
   }, []);
@@ -66,9 +66,8 @@ export default function App() {
       if (route === 'home' && window.location.hash) {
         const id = window.location.hash.replace('#', '');
         setTimeout(() => {
-          const el = document.getElementById(id);
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 60);
+          smoothScrollTo(id);
+        }, 50);
       }
     };
 
@@ -78,8 +77,9 @@ export default function App() {
     // Initial hash scroll if starting on homepage with hash
     if (currentPage === 'home' && window.location.hash) {
       const id = window.location.hash.replace('#', '');
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ block: 'start' });
+      setTimeout(() => {
+        smoothScrollTo(id);
+      }, 100);
     }
 
     // Idle prefetch ModalRoot so user clicking any CTA experiences zero delay
@@ -127,7 +127,7 @@ export default function App() {
           <>
             <Hero onOpenDemo={handleOpenDemo} onNavigate={navigate} />
             <Accreditation />
-            <Pricing onOpenDemo={handleOpenDemo} />
+            <Pricing onOpenDemo={handleOpenDemo} onNavigate={navigate} />
             <Courses onOpenCourse={handleOpenCourse} onOpenBuy={handleOpenBuy} />
             <Curriculum onOpenBrochure={handleOpenBrochure} />
             <AppSection />

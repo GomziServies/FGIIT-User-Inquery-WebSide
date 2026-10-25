@@ -1,6 +1,13 @@
 import React from 'react';
+import { smoothScrollTo } from '../utils/scroll';
 
 export default function BottomCTA({ onOpenDemo, onNavigate }) {
+  const handleEnrollClick = (e) => {
+    e.preventDefault();
+    window.history.pushState({ page: 'home' }, '', '/#courses');
+    smoothScrollTo('courses');
+  };
+
   return (
     <section id="cta" className="wrap section section--tight">
       <div className="surface">
@@ -23,7 +30,12 @@ export default function BottomCTA({ onOpenDemo, onNavigate }) {
             </span>
           </div>
           <div className="btn-row">
-            <a className="btn btn-lime" href="#price" style={{ minHeight: '52px' }}>
+            <a
+              className="btn btn-lime"
+              href="#courses"
+              onClick={handleEnrollClick}
+              style={{ minHeight: '52px' }}
+            >
               Enroll Now – ₹2,999
             </a>
             <a

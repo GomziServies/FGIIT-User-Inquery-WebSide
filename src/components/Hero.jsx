@@ -1,7 +1,14 @@
 import React from 'react';
 import Icon from './Icons';
+import { smoothScrollTo } from '../utils/scroll';
 
 export default function Hero({ onOpenDemo, onNavigate }) {
+  const handleScrollToCourses = (e) => {
+    e.preventDefault();
+    window.history.pushState({ page: 'home' }, '', '/#courses');
+    smoothScrollTo('courses');
+  };
+
   return (
     <section id="top" style={{ background: 'linear-gradient(180deg, #F4F9E6 0%, #FFFFFF 100%)' }}>
       <div
@@ -27,7 +34,8 @@ export default function Hero({ onOpenDemo, onNavigate }) {
         >
           {/* Eyebrow Status Badge */}
           <a
-            href="#price"
+            href="#courses"
+            onClick={handleScrollToCourses}
             className="hero-badge-pill"
             aria-label="Batch 2026 Admitting Now - 100% Placement Support Guarantee"
           >
@@ -85,7 +93,8 @@ export default function Hero({ onOpenDemo, onNavigate }) {
           <div className="btn-row" style={{ alignItems: 'center', gap: '14px', paddingTop: '4px' }}>
             <a
               className="btn btn-lime"
-              href="#price"
+              href="#courses"
+              onClick={handleScrollToCourses}
               style={{ minHeight: '54px', padding: '0 28px', fontSize: '15.5px' }}
             >
               Enroll Now · ₹2,999
