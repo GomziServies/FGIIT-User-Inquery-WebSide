@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Icon from '../Icons';
+import SubmitNotice from '../SubmitNotice';
 import {
   COURSES,
   COURSE_ORDER,
@@ -323,7 +324,7 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
   };
 
   const handlePhoneChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 15);
     setPhone(raw);
     saveUserProfile({ phone: raw });
     if (err) setErr('');
@@ -344,7 +345,7 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
       return;
     }
     if (!okPhone(phone)) {
-      setErr('Please enter a valid 10-digit contact number.');
+      setErr('Please enter a valid contact number (10 digits, or with country code).');
       return;
     }
     if (!email.trim() || !okEmail(email.trim())) {
@@ -477,7 +478,7 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
       return;
     }
     if (!okPhone(phone)) {
-      setErr('Please enter a valid 10-digit contact number.');
+      setErr('Please enter a valid contact number (10 digits, or with country code).');
       return;
     }
     if (!email.trim() || !okEmail(email.trim())) {
@@ -499,7 +500,7 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
 - Course: ${courseName}
 - Fee: ${price}
 - Candidate Name: ${name.trim()}
-- Contact No: +91 ${phone}
+- Contact No: ${phone.length > 10 ? `+${phone}` : `+91 ${phone}`}
 - Email: ${email.trim()}
 - Request Type: Talk with Expert Team
 - Status: New Academic Lead
@@ -846,7 +847,7 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
                   type="tel"
                   required
                   autoComplete="tel"
-                  placeholder="10-digit mobile number"
+                  placeholder="Mobile number (country code optional)"
                   value={phone}
                   onChange={handlePhoneChange}
                   style={{ paddingLeft: '48px' }}
@@ -871,6 +872,8 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
                 Login credentials and official payment invoice will be sent to this email.
               </span>
             </label>
+
+            <SubmitNotice />
 
             {/* TWO ACTION BUTTONS: 1. Pay Now via Razorpay  2. Talk with Expert Team */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
@@ -1112,7 +1115,7 @@ function DemoModalContent({ onClose }) {
   };
 
   const handlePhoneChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 15);
     setPhone(raw);
     saveUserProfile({ phone: raw });
     if (err) setErr('');
@@ -1140,7 +1143,7 @@ function DemoModalContent({ onClose }) {
       return;
     }
     if (!okPhone(phone)) {
-      setErr('Please enter a valid 10-digit WhatsApp number.');
+      setErr('Please enter a valid WhatsApp number (10 digits, or with country code).');
       return;
     }
     if (!email.trim() || !okEmail(email.trim())) {
@@ -1357,8 +1360,8 @@ function DemoModalContent({ onClose }) {
             <input
               type="tel"
               inputMode="numeric"
-              maxLength={10}
-              placeholder="10-digit mobile"
+              maxLength={15}
+              placeholder="Mobile number (country code optional)"
               value={phone}
               onChange={handlePhoneChange}
             />
@@ -1373,6 +1376,8 @@ function DemoModalContent({ onClose }) {
               onChange={handleEmailChange}
             />
           </label>
+
+          <SubmitNotice />
 
           {err && (
             <div className="err" role="alert">
@@ -1421,7 +1426,7 @@ function CertificateApplyModalContent({ onClose }) {
   };
 
   const handlePhoneChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 15);
     setPhone(raw);
     saveUserProfile({ phone: raw });
     if (err) setErr('');
@@ -1448,7 +1453,7 @@ function CertificateApplyModalContent({ onClose }) {
       return;
     }
     if (!okPhone(phone)) {
-      setErr('Please enter a valid 10-digit WhatsApp number.');
+      setErr('Please enter a valid WhatsApp number (10 digits, or with country code).');
       return;
     }
     if (!email.trim() || !okEmail(email.trim())) {
@@ -1574,8 +1579,8 @@ function CertificateApplyModalContent({ onClose }) {
               <input
                 type="tel"
                 inputMode="numeric"
-                maxLength={10}
-                placeholder="10-digit mobile"
+                maxLength={15}
+                placeholder="Mobile number (country code optional)"
                 value={phone}
                 onChange={handlePhoneChange}
               />
@@ -1629,6 +1634,8 @@ function CertificateApplyModalContent({ onClose }) {
               {err}
             </div>
           )}
+
+          <SubmitNotice />
 
           <button
             type="submit"
@@ -1698,7 +1705,7 @@ function BrochureModalContent({ onClose }) {
   };
 
   const handlePhoneChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 15);
     setPhone(raw);
     saveUserProfile({ phone: raw });
     if (err) setErr('');
@@ -1725,7 +1732,7 @@ function BrochureModalContent({ onClose }) {
       return;
     }
     if (!okPhone(phone)) {
-      setErr('Please enter a valid 10-digit WhatsApp number.');
+      setErr('Please enter a valid WhatsApp number (10 digits, or with country code).');
       return;
     }
     if (!email.trim() || !okEmail(email.trim())) {
@@ -1865,8 +1872,8 @@ function BrochureModalContent({ onClose }) {
               <input
                 type="tel"
                 inputMode="numeric"
-                maxLength={10}
-                placeholder="10-digit mobile"
+                maxLength={15}
+                placeholder="Mobile number (country code optional)"
                 value={phone}
                 onChange={handlePhoneChange}
               />
@@ -1921,6 +1928,8 @@ function BrochureModalContent({ onClose }) {
               {err}
             </div>
           )}
+
+          <SubmitNotice />
 
           <button
             type="submit"

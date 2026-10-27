@@ -16,6 +16,10 @@
     <link rel="preconnect" href="https://api.fggroup.in" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap" />
       <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+      <!-- FG Group visitor tracker: records this visit (campaign, device, page activity) and,
+           once the consent box is ticked, the typed contact details, as a CRM lead.
+           data-site maps to src/config/website-sources.js in fg-api. -->
+      <script src="%VITE_API_URL%/public/v1/visitor/tracker.js" data-site="fgiit-inquiry" defer></script>
   </head>
   <body>
     <div id="root"></div>

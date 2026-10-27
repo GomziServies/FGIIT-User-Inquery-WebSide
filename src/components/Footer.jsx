@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CONFIG } from '../data/fgiitData';
 
 export default function Footer({ onNavigate }) {
+  const [trackingStopped, setTrackingStopped] = useState(false);
+
   return (
     <footer
       style={{
@@ -89,6 +91,35 @@ export default function Footer({ onNavigate }) {
           >
             Trainer Assessment
           </a>
+          <a
+            href="/cookie-policy"
+            onClick={(e) => {
+              if (onNavigate) {
+                e.preventDefault();
+                onNavigate('cookie-policy');
+              }
+            }}
+            className="footer-link"
+          >
+            Cookie &amp; Data Policy
+          </a>
+          <button
+            type="button"
+            className="footer-link"
+            onClick={() => {
+              // Withdraws the agreement given when a form was sent: the visitor tracker stops sharing
+              // details and visit activity with the CRM from this browser.
+              try {
+                if (window.fgTracker && window.fgTracker.setConsent) window.fgTracker.setConsent(false);
+                else localStorage.setItem('fg_lead_consent', '0');
+                localStorage.removeItem('fg_vid');
+              } catch {}
+              setTrackingStopped(true);
+            }}
+            style={{ background: 'none', border: 0, padding: 0, textAlign: 'left', cursor: 'pointer', font: 'inherit' }}
+          >
+            {trackingStopped ? 'Tracking stopped on this device' : 'Stop tracking on this device'}
+          </button>
         </div>
       </div>
 

@@ -33,7 +33,8 @@ export const CONFIG = {
 export const waLink = (msg) =>
   `https://wa.me/${CONFIG.WHATSAPP}?text=${encodeURIComponent(msg)}`;
 
-export const okPhone = (p) => /^[6-9]\d{9}$/.test(p);
+// 10-digit Indian mobile, or a number with its country code (e.g. 919188666002), up to 15 digits
+export const okPhone = (p) => /^(?:[6-9]\d{9}|\d{11,15})$/.test(p);
 export const okEmail = (e) => /^\S+@\S+\.\S+$/.test(e);
 
 export async function sendTelemetry(type, data) {
@@ -169,7 +170,8 @@ export async function submitContactInquiry({
   file,
   files,
 }) {
-  const cleanMobile = String(mobile || '').replace(/\D/g, '').slice(-10);
+  // Keep the whole number including any country code (the CRM matches on the last 10 digits)
+  const cleanMobile = String(mobile || '').replace(/\D/g, '').slice(0, 15);
   const resolvedEmail =
     email && email.trim() && okEmail(email.trim())
       ? email.trim()
@@ -180,6 +182,33 @@ export async function submitContactInquiry({
     (typeof window !== 'undefined' && window.location.href) ||
     'https://fgiit.com/#test';
 
+  // Sending a form is the visitor's agreement (every form shows a notice saying so). Hand the form's own
+  // details to the visitor tracker first: it sends them with the visit activity, so the CRM lead
+  // (platform 'website_visitor') exists before this inquiry joins it. Capped at 2.5s so a slow tracker
+  // never delays the inquiry itself.
+  if (typeof window !== 'undefined' && window.fgTracker && window.fgTracker.consentOnSubmit) {
+    try {
+      await Promise.race([
+        window.fgTracker.consentOnSubmit(
+          {
+            full_name: String(name || '').trim(),
+            phone_number: cleanMobile,
+            email: email && okEmail(String(email).trim()) ? String(email).trim() : '',
+          },
+          subject
+        ),
+        new Promise((resolve) => setTimeout(resolve, 2500)),
+      ]);
+    } catch {}
+  }
+
+  // Tie this submit to the visitor tracker's id so the CRM joins it to the same lead
+  // (the partial "website_visitor" lead) instead of creating a duplicate.
+  const visitorId =
+    (typeof window !== 'undefined' && window.fgTracker && window.fgTracker.visitorId) ||
+    (typeof window !== 'undefined' && window.localStorage && (() => { try { return localStorage.getItem('fg_vid'); } catch { return null; } })()) ||
+    null;
+
   const payload = {
     name: String(name || '').trim(),
     email: resolvedEmail,
@@ -187,7 +216,7 @@ export async function submitContactInquiry({
     subject: subject || 'Coach Level Test Assessment:',
     message: String(message || '').trim(),
     source: resolvedSource,
-    details: details || {},
+    details: { ...(details || {}), ...(visitorId ? { visitor_id: visitorId } : {}) },
   };
 
   if (file) {

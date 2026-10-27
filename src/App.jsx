@@ -16,6 +16,8 @@ import BottomCTA from './components/BottomCTA';
 import Footer from './components/Footer';
 import WhatsAppFloat from './components/WhatsAppFloat';
 import AssessmentPage from './pages/AssessmentPage';
+import CookiePolicy from './components/CookiePolicy';
+import CookieConsent from './components/CookieConsent';
 import { smoothScrollTo } from './utils/scroll';
 
 // Code-split ModalRoot chunk to keep initial landing page load instant (< 60kB)
@@ -27,6 +29,9 @@ function getInitialRoute() {
   const hash = window.location.hash.toLowerCase();
   if (path === '/assessment' || path.startsWith('/assessment') || hash === '#assessment' || hash === '#test') {
     return 'assessment';
+  }
+  if (path === '/cookie-policy' || path.startsWith('/cookie-policy') || hash === '#cookie-policy') {
+    return 'cookie-policy';
   }
   return 'home';
 }
@@ -42,6 +47,12 @@ export default function App() {
         window.history.pushState({ page: 'assessment' }, '', url);
       }
       setCurrentPage('assessment');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (page === 'cookie-policy') {
+      if (window.location.pathname !== '/cookie-policy') {
+        window.history.pushState({ page: 'cookie-policy' }, '', '/cookie-policy');
+      }
+      setCurrentPage('cookie-policy');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       const url = targetHash ? `/#${targetHash}` : '/';
@@ -123,6 +134,8 @@ export default function App() {
             onNavigate={navigate}
             onOpenDemo={handleOpenDemo}
           />
+        ) : currentPage === 'cookie-policy' ? (
+          <CookiePolicy onNavigate={navigate} />
         ) : (
           <>
             <Hero onOpenDemo={handleOpenDemo} onNavigate={navigate} />
@@ -144,6 +157,7 @@ export default function App() {
 
       <Footer onNavigate={navigate} />
       <WhatsAppFloat />
+      <CookieConsent onNavigate={navigate} />
 
       <React.Suspense fallback={null}>
         <ModalRoot modalState={modalState} onClose={handleCloseModal} />

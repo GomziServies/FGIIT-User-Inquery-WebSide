@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Icon from './Icons';
+import SubmitNotice from './SubmitNotice';
 import {
   CATS,
   QUESTIONS,
@@ -63,7 +64,7 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
   };
 
   const handlePhoneChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 15);
     setPhone(raw);
     saveUserProfile({ phone: raw });
     if (err) setErr('');
@@ -89,7 +90,7 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
       return;
     }
     if (!okPhone(phone)) {
-      setErr('Please enter a valid 10-digit WhatsApp number.');
+      setErr('Please enter a valid WhatsApp number (10 digits, or with country code).');
       return;
     }
     if (email.trim() && !okEmail(email.trim())) {
@@ -917,8 +918,8 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                   <input
                     type="tel"
                     inputMode="numeric"
-                    maxLength={10}
-                    placeholder="10-digit mobile"
+                    maxLength={15}
+                    placeholder="Mobile number (country code optional)"
                     value={phone}
                     onChange={handlePhoneChange}
                     style={{ borderRadius: '12px' }}
@@ -978,6 +979,8 @@ export default function CoachLevelQuiz({ onOpenReport, onNavigate }) {
                 <Icon name="lock" size={15} style={{ color: 'var(--deep)', flexShrink: 0 }} />
                 <span>Your contact details are strictly confidential. No spam guaranteed.</span>
               </div>
+
+              <SubmitNotice />
 
               <div
                 style={{
