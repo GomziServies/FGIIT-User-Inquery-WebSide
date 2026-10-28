@@ -52,7 +52,8 @@ export default function CookieConsent({ onNavigate }) {
           }}>
             <span style={{ fontSize: '18px', marginRight: '8px', verticalAlign: 'middle' }}>&#x1F36A;</span>
             We use cookies and browser storage to improve your experience and analyse site traffic.
-            Anonymous visit data is collected on page load.{' '}
+            Accepting lets our team's CRM save your visit summary (pages viewed, interests, device and
+            browser storage) — no personal details are added unless you send a form.{' '}
             <a
               href="/cookie-policy"
               onClick={(e) => { if (onNavigate) { e.preventDefault(); onNavigate('cookie-policy'); } }}

@@ -36,10 +36,10 @@ export default function CookiePolicy({ onNavigate }) {
           </div>
 
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>Before you submit a form (anonymous)</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>Before you agree (anonymous)</h2>
             <p style={{ marginBottom: '12px' }}>
-              When you visit this page without submitting any form, the tracker records only anonymous,
-              non-identifying activity:
+              When you visit this page without agreeing to the cookie policy and without submitting any
+              form, the tracker records only anonymous, non-identifying activity:
             </p>
             <ul style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <li>Pages viewed and buttons clicked</li>
@@ -50,16 +50,40 @@ export default function CookiePolicy({ onNavigate }) {
             </ul>
             <p style={{ marginTop: '12px', fontWeight: 600 }}>
               No name, phone number, email address, IP address, or persistent identifier is collected
-              or sent before you submit a form.
+              or sent before you agree.
             </p>
           </div>
 
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>After you submit a form (with agreement)</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px' }}>After you accept the cookie policy (with consent)</h2>
             <p style={{ marginBottom: '12px' }}>
-              Submitting any form on this page (enquiry, demo request, assessment, etc.) acts as your
-              agreement. A notice is displayed above every submit button. After submission, the following
-              data is collected and sent to our CRM:
+              Clicking <strong>&ldquo;Accept All&rdquo;</strong> on the cookie banner acts as your agreement.
+              Our tracker then:
+            </p>
+            <ul style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <li>Creates a visitor identifier in this browser's own cookie and localStorage, so your visits can be recognised as one visitor</li>
+              <li>Pages viewed, sections seen and buttons clicked (this and future visits)</li>
+              <li>Your device details the browser exposes to any site (device type, OS, browser, screen size, language, timezone)</li>
+              <li>
+                A summary of the browser storage <strong>this site keeps in your browser</strong>:
+                localStorage, sessionStorage, cookies, IndexedDB (database / store names and record
+                counts) and service-worker cache names. Sensitive entries (tokens, passwords, payment
+                fields) are excluded, and data of other websites cannot be read.
+              </li>
+            </ul>
+            <p style={{ marginTop: '12px' }}>
+              This visit summary is saved in our CRM (marketing panel) as a <em>Website Visitor</em>-platform
+              lead without contact details. If the FGIIT Academy app previously saved your profile in this
+              browser, that profile may be included in the same lead.
+            </p>
+          </div>
+
+          <div>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px' }}>After you submit a form (with agreement)</h2>
+            <p style={{ marginBottom: '12px' }}>
+              Submitting any form on this page (enquiry, demo request, assessment, etc.) also acts as your
+              agreement — a notice is displayed above every submit button. The form's contact details are
+              added to the same lead, which then also carries:
             </p>
             <ul style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <li>Name, phone number, email address (as entered in the form)</li>
@@ -97,20 +121,32 @@ export default function CookiePolicy({ onNavigate }) {
                   <tr>
                     <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}><code>fg_events</code></td>
                     <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>sessionStorage</td>
-                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>After form submit</td>
-                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>Page activity linked to your contact details</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>After you agree</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>Page activity linked to your visit or contact details</td>
                   </tr>
                   <tr style={{ background: 'var(--bg2)' }}>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}><code>fg_cookie_choice</code></td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>localStorage</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>Cookie banner answer</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>Remembers whether you accepted or rejected the cookie policy</td>
+                  </tr>
+                  <tr>
                     <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}><code>fg_lead_consent</code></td>
                     <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>localStorage</td>
-                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>After form submit</td>
-                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>Records that you agreed to share contact details</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>After you accept the cookie policy or submit a form</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>Records that you agreed to the visit tracking</td>
+                  </tr>
+                  <tr style={{ background: 'var(--bg2)' }}>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}><code>fg_consent_source</code></td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>localStorage</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>After you accept the cookie policy or submit a form</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>Where the agreement came from (banner or form)</td>
                   </tr>
                   <tr>
                     <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}><code>fg_vid</code></td>
-                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>localStorage</td>
-                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>After form submit</td>
-                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>Visitor identifier for recognizing return visits</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>localStorage + cookie</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>After you accept the cookie policy or submit a form</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>Visitor identifier for recognizing return visits (deleted when you reject the banner or stop tracking)</td>
                   </tr>
                   <tr style={{ background: 'var(--bg2)' }}>
                     <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}><code>fgiit_user_profile_v1</code></td>
@@ -135,9 +171,11 @@ export default function CookiePolicy({ onNavigate }) {
           <div>
             <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>How to opt out</h2>
             <p>
-              You can withdraw your agreement at any time by clicking <strong>"Stop tracking on this
-              device"</strong> in the footer below. This removes your visitor identifier and stops the
-              tracker from sending any further contact details or visit activity from this browser.
+              You can withdraw your agreement at any time. Click <strong>&ldquo;Reject All&rdquo;</strong> on
+              the cookie banner (re-open it by clearing <code>fg_cookie_choice</code> from this site's
+              localStorage), or use <strong>&ldquo;Stop tracking on this device&rdquo;</strong> in the
+              footer below. Both remove your visitor identifier and stop the tracker from sending any
+              further contact details or visit activity from this browser.
               You can also clear your browser's localStorage and sessionStorage for this site.
             </p>
           </div>
