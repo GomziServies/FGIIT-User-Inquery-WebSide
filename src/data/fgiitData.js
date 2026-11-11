@@ -1,7 +1,7 @@
 export const CONFIG = {
   SUBMIT_URL: import.meta.env?.VITE_SUBMIT_URL || '',
-  WHATSAPP: import.meta.env?.VITE_WHATSAPP_NUMBER || '918866842520',
-  PHONE_DISPLAY: import.meta.env?.VITE_PHONE_DISPLAY || '+91 88668 42520',
+  WHATSAPP: import.meta.env?.VITE_WHATSAPP_NUMBER || '916354051487',
+  PHONE_DISPLAY: import.meta.env?.VITE_PHONE_DISPLAY || '+91 63540 51487',
   API_URL: import.meta.env?.VITE_API_URL || '',
   INPTA_URL: import.meta.env?.VITE_INPTA_URL || 'https://inpta.fggroup.in/',
   APP_PLAY_URL:
@@ -32,6 +32,13 @@ export const CONFIG = {
 
 export const waLink = (msg) =>
   `https://wa.me/${CONFIG.WHATSAPP}?text=${encodeURIComponent(msg)}`;
+
+/* "Inquiry Now" buttons open WhatsApp chat directly with the admissions number */
+export const INQUIRY_WHATSAPP = CONFIG.WHATSAPP;
+export const inquiryLink = (course = 'Nutri-Trainer Combo') =>
+  `https://wa.me/${INQUIRY_WHATSAPP}?text=${encodeURIComponent(
+    `Hello FGIIT Team, I would like to inquire about the ${course} course. Please share the details.`
+  )}`;
 
 // 10-digit Indian mobile, or a number with its country code (e.g. 919188666002), up to 15 digits
 export const okPhone = (p) => /^(?:[6-9]\d{9}|\d{11,15})$/.test(p);
@@ -733,8 +740,16 @@ export const COURSES = {
 
 export const COURSE_ORDER = ['pt', 'dn', 'aas', 'pl', 'gi', 'ir'];
 
-/* Nutri-Trainer Combo price (all courses except Steroids Masterclass) */
-export const COMBO_PRICE = '₹4,999';
+/* Nutri-Trainer Combo — the only programme offered on the website */
+export const NT_COMBO = {
+  id: 'nt',
+  name: 'Nutri-Trainer Combo',
+  dur: '6–8 months',
+  intro:
+    'Five courses in one programme: personal training, nutrition, group instruction, injury rehabilitation and powerlifting.',
+  courseIds: ['pt', 'dn', 'gi', 'ir', 'pl'],
+  facts: ['5 courses', '6–8 months', 'Live + pre-recorded', 'Free e-books (PDF)', 'Without certificate'],
+};
 
 /* Pre-generated brochure files served from /images/brochure/ */
 export const BROCHURE_FILES = {
@@ -747,7 +762,7 @@ export const BROCHURE_FILES = {
   nt: 'FGIIT_Nutri_Trainer_Combo_Brochure.pdf',
 };
 
-/* What the ₹2,999 course fee includes (learning access to ONE eligible course) */
+/* What the Nutri-Trainer Combo includes */
 export const INCLUDES = [
   {
     id: 'live',
@@ -765,24 +780,24 @@ export const INCLUDES = [
     id: 'ebooks',
     icon: 'book',
     title: 'E-Books & Study Materials',
-    desc: 'Digital notes, articles and a free e-book (PDF) with every course for revision and reference.',
+    desc: 'Digital notes, articles and free e-books (PDF) for all five courses, for revision and reference.',
   },
   {
-    id: 'onecourse',
+    id: 'fivecourses',
     icon: 'layers',
-    title: 'Access to One Eligible Course',
-    desc: 'The fee covers one eligible course of your choice — not every course in the catalogue.',
+    title: '5 Courses in One Combo',
+    desc: 'Personal Trainer, Nutrition, Group Instructor, Injury Rehabilitation and Powerlifting — all in one programme.',
   },
   {
     id: 'journey',
     icon: 'route',
     title: 'Structured Learning Journey',
-    desc: 'A clear, ordered curriculum for the course you pick, so you always know what comes next.',
+    desc: 'A clear, ordered curriculum across all five courses, so you always know what comes next.',
   },
 ];
 
 export const ACCREDITATION_NOTE =
-  'Accreditation and certification are separate from the ₹2,999 course fee. Eligible students who wish to obtain accreditation or certification must apply separately through INPTA, subject to its applicable eligibility requirements, approval process, and fees.';
+  'Accreditation and certification are separate from the course fee. Eligible students who wish to obtain accreditation or certification must apply separately through INPTA, subject to its applicable eligibility requirements, approval process, and fees.';
 
 /* Six learning stages of the Job-Ready Batch journey */
 export const TIMELINE = [
@@ -819,7 +834,7 @@ export const TIMELINE = [
 ];
 
 export const TIMELINE_NOTE =
-  'This is the Job-Ready Batch learning journey. Each course you enrol in follows its own curriculum — open any course above to see its exact syllabus.';
+  'This is the Job-Ready Batch learning journey of the Nutri-Trainer Combo. See the course section above for all five courses it includes.';
 
 /* FGIIT Academy app — official store listings and authentic screenshots */
 export const APP = {
@@ -869,13 +884,13 @@ export const JOURNEY = [
   { num: '6', title: 'Job placement', desc: '100% placement, India or abroad.' },
 ];
 
-/* Accreditation options applied for separately through INPTA (not part of the ₹2,999 fee) */
+/* Accreditation options applied for separately through INPTA (not part of the course fee) */
 export const CERT_OPTIONS = [
-  { id: 'pt', name: 'Diploma in Personal Trainer', fee: '₹33,777', kind: 'big' },
-  { id: 'dn', name: 'Diploma in Nutrition', fee: '₹33,777', kind: 'big' },
-  { id: 'gi', name: 'Group Instructor Masterclass', fee: '₹7,080', kind: 'small' },
-  { id: 'ir', name: 'Injury Rehabilitation Masterclass', fee: '₹7,080', kind: 'small' },
-  { id: 'pl', name: 'Powerlifting Coach Masterclass', fee: '₹7,080', kind: 'small' },
+  { id: 'pt', name: 'Diploma in Personal Trainer', kind: 'big' },
+  { id: 'dn', name: 'Diploma in Nutrition', kind: 'big' },
+  { id: 'gi', name: 'Group Instructor Masterclass', kind: 'small' },
+  { id: 'ir', name: 'Injury Rehabilitation Masterclass', kind: 'small' },
+  { id: 'pl', name: 'Powerlifting Coach Masterclass', kind: 'small' },
 ];
 
 export const CERT_IMGS = [
@@ -905,26 +920,40 @@ export const COACHES = [
   { file: 'jeremiah.jpg', name: 'Jeremiah Dkhar', course: 'Steroids Masterclass · 2026' },
 ];
 
+/* FGIIT-certified students and what they earn now — posters live in /images/placeintern/ */
+export const PLACEMENTS = [
+  { file: 'fgiit-webinar-placement-1.webp', name: 'Chirag Pandey', role: 'Master Trainer', income: '2.5 Lakh' },
+  { file: 'fgiit-webinar-placement-2.webp', name: 'Chirag Chandlekar', role: 'Personal Trainer', income: '1 Lakh' },
+  { file: 'fgiit-webinar-placement-5.webp', name: 'Kinjal Pantagia', role: 'Dietitian', income: '1 Lakh' },
+  { file: 'fgiit-webinar-placement-3.webp', name: 'Kaushik Parmar', role: 'Personal Trainer', income: '1 Lakh' },
+  { file: 'fgiit-webinar-placement-6.webp', name: 'Nisha Jariwala', role: 'Dietitian', income: '1 Lakh' },
+  { file: 'fgiit-webinar-placement-4.webp', name: 'Rushabh Joshi', role: 'Personal Trainer', income: '50K' },
+];
+
 export const FAQS = [
   {
-    q: 'What is included in the ₹2,999 fee?',
-    a: 'Live online classes with expert faculty, recorded video lessons, e-books and study materials, a structured learning journey for the course you pick, and access to the FGIIT Academy app where all of it is delivered.',
+    q: 'What is the Nutri-Trainer Combo?',
+    a: 'It is our complete fitness-career programme: five courses in one — Diploma in Personal Trainer, Diploma in Nutrition, Group Instructor, Injury Rehabilitation and Powerlifting Coach. It runs for 6–8 months with live online classes and recorded lessons.',
   },
   {
-    q: 'Does ₹2,999 include all courses?',
-    a: 'No. The ₹2,999 fee gives you access to one eligible course of your choice. The Nutri-Trainer Combo — Personal Trainer, Nutrition, Group Instructor, Injury Rehabilitation and Powerlifting together — is ₹4,999, and the Steroids Masterclass is a separate course.',
+    q: 'What is included in the Nutri-Trainer Combo?',
+    a: 'Live online classes with expert faculty, recorded video lessons, e-books and study materials for all five courses, a structured learning journey, and access to the FGIIT Academy app where all of it is delivered.',
+  },
+  {
+    q: 'What is the course fee and how do I join?',
+    a: 'Tap "Inquiry Now" anywhere on the page. It opens a WhatsApp chat with our admissions team, who will share the current fee, batch dates and the joining process with you.',
   },
   {
     q: 'Are live online classes included?',
-    a: 'Yes. Live online sessions are part of the course fee. They run on a fixed schedule, you can join from your phone or laptop, and every session is also recorded so you can revise it later.',
+    a: 'Yes. Live online sessions are part of the course. They run on a fixed schedule, you can join from your phone or laptop, and every session is also recorded so you can revise it later.',
   },
   {
     q: 'Are recorded videos and e-books included?',
-    a: 'Yes. Recorded lessons and a free e-book (PDF) come with every course, and all of it is available in the FGIIT Academy app along with lecture notes and other study material.',
+    a: 'Yes. Recorded lessons and free e-books (PDF) for all five courses are included, and all of it is available in the FGIIT Academy app along with lecture notes and other study material.',
   },
   {
     q: 'Is accreditation or certification included in the course fee?',
-    a: 'No. Accreditation and certification are separate from the ₹2,999 course fee. Eligible students who wish to obtain accreditation or certification must apply separately through INPTA, subject to its applicable eligibility requirements, approval process and fees.',
+    a: 'No. Accreditation and certification are separate from the course fee. Eligible students who wish to obtain accreditation or certification must apply separately through INPTA, subject to its applicable eligibility requirements, approval process and fees.',
   },
   {
     q: 'How can I apply for an INPTA certificate?',
@@ -936,7 +965,7 @@ export const FAQS = [
   },
   {
     q: 'How can I download the complete course brochure?',
-    a: 'Use the "Download the Complete Course Brochure" button in the learning journey section. Share your name, contact number, email, address and the course you are interested in — the PDF downloads straight to your device and is also emailed to you, and our team follows up on WhatsApp within 24 hours.',
+    a: 'Use the "Download the Complete Course Brochure" button in the learning journey section. Share your name, contact number, email and address — the Nutri-Trainer Combo brochure PDF downloads straight to your device and is also emailed to you, and our team follows up on WhatsApp within 24 hours.',
   },
 ];
 

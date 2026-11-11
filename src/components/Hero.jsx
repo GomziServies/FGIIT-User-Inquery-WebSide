@@ -1,6 +1,7 @@
 import React from 'react';
 import Icon from './Icons';
 import { smoothScrollTo } from '../utils/scroll';
+import { inquiryLink } from '../data/fgiitData';
 
 export default function Hero({ onOpenDemo, onNavigate }) {
   const handleScrollToCourses = (e) => {
@@ -85,19 +86,21 @@ export default function Hero({ onOpenDemo, onNavigate }) {
               maxWidth: '560px',
             }}
           >
-            Six-Month Diploma Online Courses with live interactive training, sports nutrition,
-            rehabilitation, and guaranteed placement with leading fitness chains across India.
+            The Nutri-Trainer Combo: personal training, nutrition, group instruction, injury
+            rehabilitation and powerlifting in one course, with live interactive training and
+            guaranteed placement with leading fitness chains across India.
           </p>
 
           {/* Clear Primary & Secondary CTAs */}
           <div className="btn-row" style={{ alignItems: 'center', gap: '14px', paddingTop: '4px' }}>
             <a
               className="btn btn-lime"
-              href="#courses"
-              onClick={handleScrollToCourses}
+              href={inquiryLink()}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{ minHeight: '54px', padding: '0 28px', fontSize: '15.5px' }}
             >
-              Enroll Now · ₹2,999
+              Inquiry Now
               <span aria-hidden="true" style={{ fontSize: '17px', marginLeft: '4px' }}>
                 →
               </span>
@@ -214,7 +217,21 @@ export default function Hero({ onOpenDemo, onNavigate }) {
               border: '1px solid rgba(255, 255, 255, 0.9)',
             }}
           >
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div
+              style={{
+                flex: 'none',
+                width: '64px',
+                height: '64px',
+                borderRadius: '16px',
+                background: 'var(--tint)',
+                border: '1px solid #D8E8B5',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                whiteSpace: 'nowrap',
+              }}
+            >
               <span
                 style={{
                   fontSize: '28px',
@@ -225,32 +242,36 @@ export default function Hero({ onOpenDemo, onNavigate }) {
                   letterSpacing: '-0.02em',
                 }}
               >
-                ₹2,999
+                5
               </span>
               <span
                 style={{
-                  fontSize: '11px',
-                  color: 'var(--muted)',
-                  fontWeight: 600,
+                  fontSize: '9.5px',
+                  color: 'var(--deep)',
+                  fontWeight: 700,
+                  letterSpacing: '.08em',
                   textTransform: 'uppercase',
                   marginTop: '3px',
                 }}
               >
-                All-Inclusive Pass
+                Courses
               </span>
             </div>
-            <div
-              style={{
-                width: '1px',
-                height: '38px',
-                background: 'var(--line)',
-                flex: 'none',
-              }}
-            />
-            <span style={{ fontSize: '13px', lineHeight: 1.45, color: 'var(--text2)' }}>
-              <b style={{ color: 'var(--ink)' }}>One eligible course.</b> Live classes, recorded
-              revision, e-books &amp; Academy app access.
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+              <b
+                style={{
+                  fontSize: '15px',
+                  lineHeight: 1.25,
+                  color: 'var(--ink)',
+                  fontFamily: 'var(--font-heading)',
+                }}
+              >
+                Nutri-Trainer Combo · All in One
+              </b>
+              <span style={{ fontSize: '13px', lineHeight: 1.45, color: 'var(--text2)' }}>
+                Live classes, recorded revision, e-books &amp; Academy app access.
+              </span>
+            </div>
           </div>
         </div>
       </div>

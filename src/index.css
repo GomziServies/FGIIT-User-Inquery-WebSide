@@ -1991,3 +1991,105 @@ details p {
     padding: 0 12px;
   }
 }
+
+/* ================= Job placements section ================= */
+.placements-track {
+  gap: 16px;
+}
+
+.placements-track > .placement-card {
+  flex: 0 0 calc((100% - 48px) / 4);
+}
+
+.placement-card {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(11, 18, 16, 0.05);
+}
+
+.placement-card img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  background: var(--bg2);
+}
+
+.placement-card figcaption {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px 16px 16px;
+}
+
+.placement-tag {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-bottom: 2px;
+  background: var(--lime);
+  color: var(--ink);
+}
+
+
+.placement-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.placement-meta {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.placements-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: var(--bg2);
+  border-left: 4px solid var(--lime);
+  border-radius: var(--r-md);
+  padding: 16px 20px;
+}
+
+.placements-cta span {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+@media (max-width: 991px) {
+  .placements-track > .placement-card {
+    flex: 0 0 260px;
+  }
+}
+
+@media (max-width: 480px) {
+  .placements-track > .placement-card {
+    flex: 0 0 78%;
+  }
+
+  .placements-cta {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .placements-cta .btn {
+    width: 100%;
+  }
+}

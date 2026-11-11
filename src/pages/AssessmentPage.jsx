@@ -9,7 +9,7 @@ export default function AssessmentPage({ onOpenReport, onNavigate, onOpenDemo })
     window.scrollTo(0, 0);
 
     return () => {
-      document.title = 'FGIIT Job-Ready Batch | Six-Month Diploma Online Courses from ₹2,999';
+      document.title = 'FGIIT Job-Ready Batch | Nutri-Trainer Combo – 5 Fitness Courses in One';
     };
   }, []);
 

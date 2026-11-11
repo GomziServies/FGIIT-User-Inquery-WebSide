@@ -3,9 +3,8 @@ import Icon from '../Icons';
 import SubmitNotice from '../SubmitNotice';
 import {
   COURSES,
-  COURSE_ORDER,
   CERT_OPTIONS,
-  BROCHURE_FILES,
+  NT_COMBO,
   CONFIG,
   waLink,
   okPhone,
@@ -54,7 +53,7 @@ export default function ModalRoot({ modalState, onClose }) {
       }}
     >
       <div
-        className={`dialog${type === 'course' || type === 'report' ? ' wide' : ''}`}
+        className={`dialog${type === 'report' ? ' wide' : ''}`}
         role="dialog"
         aria-modal="true"
       >
@@ -68,7 +67,6 @@ export default function ModalRoot({ modalState, onClose }) {
         </button>
 
         {type === 'report' && <ReportModalContent report={data} onClose={onClose} />}
-        {type === 'course' && <CourseModalContent courseId={data} onClose={onClose} />}
         {type === 'buy' && <CourseBuyFormContent courseId={data} onClose={onClose} />}
         {type === 'demo' && <DemoModalContent onClose={onClose} />}
         {type === 'certapply' && <CertificateApplyModalContent onClose={onClose} />}
@@ -202,7 +200,7 @@ function ReportModalContent({ report, onClose }) {
             }}
           >
             We could not save your details to our system just now. Please keep the downloaded report
-            and WhatsApp us on +91 88668 42520 so we can follow up with you.
+            and WhatsApp us on +91 63540 51487 so we can follow up with you.
           </div>
         )}
 
@@ -280,7 +278,7 @@ function ReportModalContent({ report, onClose }) {
           </button>
           <a
             className="btn btn-lime"
-            href="#fee"
+            href="#courses"
             onClick={onClose}
             style={{ minHeight: '52px' }}
           >
@@ -968,132 +966,6 @@ function CourseBuyFormContent({ courseId, onClose, onBack }) {
   );
 }
 
-/* ================= COURSE MODAL ================= */
-function CourseModalContent({ courseId, onClose }) {
-  const [isBuying, setIsBuying] = useState(false);
-
-  const isNt = courseId === 'nt';
-  const c = isNt ? null : COURSES[courseId];
-  const price = isNt ? '₹4,999' : '₹2,999';
-  const name = isNt ? 'Nutri-Trainer Combo' : c.name;
-  const list = isNt
-    ? ['pt', 'dn', 'gi', 'ir', 'pl'].map((k) => COURSES[k].name)
-    : c.syllabus;
-  const facts = isNt
-    ? ['5 courses', 'Live + pre-recorded', 'Free e-books (PDF)', 'Without certificate']
-    : [c.dur, 'Live + pre-recorded', 'Free e-book (PDF)', 'Without certificate'];
-
-  if (isBuying) {
-    return (
-      <CourseBuyFormContent
-        courseId={courseId}
-        onClose={onClose}
-        onBack={() => setIsBuying(false)}
-      />
-    );
-  }
-
-  return (
-    <div>
-      <div
-        style={{
-          background: 'var(--tint)',
-          padding: '24px 28px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-          borderTopLeftRadius: '24px',
-          borderTopRightRadius: '24px',
-        }}
-      >
-        <span className="eyebrow">
-          {isNt ? 'NUTRI-TRAINER COMBO · ALL COURSES IN ONE' : `FULL COURSE · ${price}`}
-        </span>
-        <h2 style={{ margin: 0, fontSize: 'clamp(24px, 3vw, 30px)', lineHeight: 1.2, paddingRight: '48px' }}>
-          {name}
-        </h2>
-        <span style={{ fontSize: '14px', lineHeight: 1.6, color: 'var(--text2)' }}>
-          {isNt
-            ? 'Combination of all our courses except the Steroids Masterclass: personal training, nutrition, group instruction, injury rehab and powerlifting.'
-            : c.intro}
-        </span>
-      </div>
-
-      <div className="pad">
-        <div className="chips">
-          {facts.map((f, i) => (
-            <span
-              key={i}
-              style={{
-                fontSize: '13px',
-                padding: '6px 12px',
-                borderRadius: '999px',
-                background: 'var(--bg2)',
-                color: 'var(--text2)',
-              }}
-            >
-              {f}
-            </span>
-          ))}
-        </div>
-
-        <b style={{ fontSize: '15px' }}>{isNt ? 'Courses included' : 'Syllabus'}</b>
-        <div
-          className="grid"
-          style={{
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '6px 20px',
-          }}
-        >
-          {list.map((item, i) => (
-            <div key={i} className="tick">
-              <span style={{ color: 'var(--lime)', fontWeight: 800 }}>•</span>
-              <span>{item}</span>
-            </div>
-          ))}
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '14px',
-            paddingTop: '16px',
-            borderTop: '1px solid #EEF2F0',
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span className="serif" style={{ fontSize: '32px' }}>
-              {price}
-            </span>
-            <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
-              Full course · without certificate
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              className="btn btn-lime"
-              onClick={() => {
-                sendTelemetry('buy_click', { course: name });
-                setIsBuying(true);
-              }}
-              style={{ minHeight: '52px' }}
-            >
-              Buy now · {price}
-            </button>
-            <a className="btn btn-ghost" href="#inpta" onClick={onClose}>
-              Need accreditation only?
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* ================= DEMO MODAL ================= */
 function DemoModalContent({ onClose }) {
   const [mode, setMode] = useState('');
@@ -1558,7 +1430,7 @@ function CertificateApplyModalContent({ onClose }) {
             INPTA accreditation application
           </h3>
           <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: 'var(--muted)' }}>
-            Accreditation and certification are separate from the ₹2,999 course fee. Your
+            Accreditation and certification are separate from the course fee. Your
             application is reviewed by our team, and approval, eligibility and the applicable
             certification fees are as per INPTA.
           </p>
@@ -1622,7 +1494,7 @@ function CertificateApplyModalContent({ onClose }) {
                       if (err) setErr('');
                     }}
                   >
-                    {opt.name} · {opt.fee}
+                    {opt.name}
                   </button>
                 );
               })}
@@ -1657,43 +1529,21 @@ function BrochureModalContent({ onClose }) {
   const [phone, setPhone] = useState(() => getUserProfile()?.phone || '');
   const [email, setEmail] = useState(() => getUserProfile()?.email || '');
   const [address, setAddress] = useState(() => getUserProfile()?.address || '');
-  const [course, setCourse] = useState('');
   const [err, setErr] = useState('');
   const [done, setDone] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const options = [
-    ...COURSE_ORDER.map((id) => ({ id, name: COURSES[id].name })),
-    { id: 'nt', name: 'Nutri-Trainer Combo (all courses)' },
-  ];
+  // Only the Nutri-Trainer Combo is offered, so the brochure is always for it
+  const course = NT_COMBO.id;
+  const courseName = NT_COMBO.name;
 
-  const courseName = (options.find((o) => o.id === course) || {}).name || '';
-  const brochureFile = BROCHURE_FILES[course] || 'FGIIT_Course_Brochure.pdf';
-  const brochureHref = `/images/brochure/${brochureFile}`;
-
-  // Downloads the pre-generated brochure for the chosen course (falls back to
-  // building it in the browser if the static file is not available).
+  // Builds the (price-free) Nutri-Trainer Combo brochure in the browser and downloads it
   const deliverBrochure = async () => {
     try {
-      const res = await fetch(brochureHref, { method: 'HEAD' });
-      if (res.ok) {
-        const link = document.createElement('a');
-        link.href = brochureHref;
-        link.download = brochureFile;
-        link.rel = 'noopener';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        return;
-      }
-    } catch (headErr) {
-      console.warn('[FGIIT] Brochure file not found, generating in browser:', headErr);
-    }
-    try {
       const { downloadCourseBrochurePDF } = await import('../../utils/brochureGenerator');
-      downloadCourseBrochurePDF(course);
+      downloadCourseBrochurePDF();
     } catch (genErr) {
-      console.warn('[FGIIT] Fallback brochure generation error:', genErr);
+      console.warn('[FGIIT] Brochure generation error:', genErr);
     }
   };
 
@@ -1743,11 +1593,6 @@ function BrochureModalContent({ onClose }) {
       setErr('Please enter your address.');
       return;
     }
-    if (!course) {
-      setErr('Please choose the course you are interested in.');
-      return;
-    }
-
     setErr('');
 
     // Persist details
@@ -1830,16 +1675,14 @@ function BrochureModalContent({ onClose }) {
             contact you on WhatsApp within 24 hours about {courseName}.
           </p>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <a
+            <button
+              type="button"
               className="btn btn-lime"
-              href={brochureHref}
-              download={brochureFile}
-              target="_blank"
-              rel="noopener noreferrer"
+              onClick={deliverBrochure}
               style={{ minHeight: '48px' }}
             >
               Download the brochure again
-            </a>
+            </button>
             <button type="button" className="btn btn-ghost" onClick={onClose}>
               Close
             </button>
@@ -1852,8 +1695,8 @@ function BrochureModalContent({ onClose }) {
             Tell us where to send it
           </h3>
           <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: 'var(--muted)' }}>
-            The brochure lists every course with its duration, fee and full syllabus. It downloads
-            straight to your device, and we also email it to you.
+            The brochure covers the Nutri-Trainer Combo — all five courses with their full
+            syllabus. It downloads straight to your device, and we also email it to you.
           </p>
 
           <div className="fgrid">
@@ -1898,29 +1741,6 @@ function BrochureModalContent({ onClose }) {
                 onChange={handleAddressChange}
               />
             </label>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <span className="lbl">Course you are interested in</span>
-            <div className="chips">
-              {options.map((opt) => {
-                const active = course === opt.id;
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    className={`chip${active ? ' on' : ''}`}
-                    aria-pressed={active}
-                    onClick={() => {
-                      setCourse(opt.id);
-                      if (err) setErr('');
-                    }}
-                  >
-                    {opt.name}
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
           {err && (

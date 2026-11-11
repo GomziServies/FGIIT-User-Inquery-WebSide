@@ -1,13 +1,7 @@
 import React from 'react';
-import { smoothScrollTo } from '../utils/scroll';
+import { inquiryLink } from '../data/fgiitData';
 
 export default function BottomCTA({ onOpenDemo, onNavigate }) {
-  const handleEnrollClick = (e) => {
-    e.preventDefault();
-    window.history.pushState({ page: 'home' }, '', '/#courses');
-    smoothScrollTo('courses');
-  };
-
   return (
     <section id="cta" className="wrap section section--tight">
       <div className="surface">
@@ -25,18 +19,19 @@ export default function BottomCTA({ onOpenDemo, onNavigate }) {
               Turn your passion into a profession.
             </h2>
             <span style={{ fontSize: '15.5px', lineHeight: 1.6, color: 'var(--text2)' }}>
-              Join the Job-Ready Batch for ₹2,999. Take the free assessment first, or sit in a live
-              demo class before you decide.
+              Join the Nutri-Trainer Combo — five fitness courses in one. Take the free assessment
+              first, or sit in a live demo class before you decide.
             </span>
           </div>
           <div className="btn-row">
             <a
               className="btn btn-lime"
-              href="#courses"
-              onClick={handleEnrollClick}
+              href={inquiryLink()}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{ minHeight: '52px' }}
             >
-              Enroll Now – ₹2,999
+              Inquiry Now
             </a>
             <a
               className="btn btn-ghost"

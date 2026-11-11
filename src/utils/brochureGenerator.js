@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { COURSES, COURSE_ORDER, INCLUDES, CONFIG, COMBO_PRICE } from '../data/fgiitData.js';
+import { COURSES, INCLUDES, CONFIG, NT_COMBO } from '../data/fgiitData.js';
 
 const DEEP = [74, 99, 11];
 const LIME = [155, 192, 40];
@@ -9,20 +9,14 @@ const MUTED = [85, 100, 95];
 const LINE = [225, 232, 229];
 
 /**
- * Builds the FGIIT course brochure PDF straight from the live course catalogue.
- * Every line in this document comes from COURSES / INCLUDES / CONFIG — nothing is invented.
+ * Builds the FGIIT Nutri-Trainer Combo brochure PDF from the live course data.
+ * Every line in this document comes from NT_COMBO / COURSES / INCLUDES / CONFIG — nothing is
+ * invented. Fees are intentionally not printed; they are shared on WhatsApp after an inquiry.
  *
- * @param {string} [courseId] - the course the visitor selected (e.g. 'pt', 'nt')
  * @returns {jsPDF}
  */
-export function generateCourseBrochurePDF(courseId) {
+export function generateCourseBrochurePDF() {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-  const selectedId = courseId || '';
-  const selectedCourse =
-    selectedId === 'nt'
-      ? { id: 'nt', name: 'Nutri-Trainer Combo', dur: '6–8 months', price: COMBO_PRICE, intro: 'All courses except the Steroids Masterclass, in one bundle.' }
-      : COURSES[selectedId] || null;
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -71,28 +65,21 @@ export function generateCourseBrochurePDF(courseId) {
   doc.setFont('times', 'bold');
   doc.setFontSize(26);
   doc.setTextColor(255, 255, 255);
-  doc.text('Job-Ready Batch', margin, 27);
+  doc.text(NT_COMBO.name, margin, 27);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(12);
   doc.setTextColor(235, 240, 230);
-  doc.text('Six-Month Diploma Online Courses  ·  Live Online Classes', margin, 35);
+  doc.text(`5 Courses in One  ·  ${NT_COMBO.dur}  ·  Live Online Classes`, margin, 35);
   doc.setFontSize(9.5);
-  doc.text('Course catalogue, durations, fees and full syllabus', margin, 41);
+  doc.text('Job-Ready Batch  ·  Courses included and full syllabus', margin, 41);
 
   y = 56;
   doc.setFont('times', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(...INK);
   doc.text('Everything you need to start your fitness career', margin, y);
-  y += 7;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
-  doc.setTextColor(...DEEP);
-  doc.text('Just ' + COURSES.pt.price, margin, y);
   y += 8;
-  bodyLine(
-    'The fee gives you access to one eligible course: live online classes, recorded video lessons, e-books and study materials, a structured learning journey, and access to the FGIIT Academy app.',
-  );
+  bodyLine(NT_COMBO.intro + ' Live online classes, recorded video lessons, e-books and study materials, a structured learning journey, and access to the FGIIT Academy app.');
   y += 2;
   bodyLine(
     'Accreditation and certification are separate from the course fee. Eligible students who wish to obtain accreditation or certification must apply separately through INPTA, subject to its applicable eligibility requirements, approval process and fees.',
@@ -100,37 +87,9 @@ export function generateCourseBrochurePDF(courseId) {
     DEEP,
   );
 
-  // ---- Selected course ---------------------------------------------------
-  if (selectedCourse) {
-    y += 4;
-    addPageIfNeeded(30);
-    doc.setFillColor(...TINT);
-    doc.roundedRect(margin, y, contentWidth, 28, 3, 3, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...DEEP);
-    doc.text('YOUR SELECTED COURSE', margin + 5, y + 7);
-    doc.setFont('times', 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor(...INK);
-    doc.text(selectedCourse.name, margin + 5, y + 14);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(...DEEP);
-    doc.text(selectedCourse.price, pageWidth - margin - 5, y + 14, { align: 'right' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...MUTED);
-    const selLines = doc.splitTextToSize(
-      `${selectedCourse.dur} · Live online classes + recorded lessons · Free e-book. ${selectedCourse.intro}`,
-      contentWidth - 10,
-    );
-    selLines.slice(0, 2).forEach((line, i) => doc.text(line, margin + 5, y + 20 + i * 4.6));
-    y += 34;
-  }
-
   // ---- What's included -------------------------------------------------
-  sectionTitle('WHAT THE FEE INCLUDES');
+  y += 2;
+  sectionTitle('WHAT THE COURSE INCLUDES');
   INCLUDES.forEach((item) => {
     addPageIfNeeded(12);
     doc.setFillColor(...LIME);
@@ -144,36 +103,16 @@ export function generateCourseBrochurePDF(courseId) {
     y += 1.4;
   });
 
-  // ---- Course catalogue -------------------------------------------------
-  sectionTitle('COURSE CATALOGUE');
-  // The visitor's selected course is listed first and marked as selected
-  const orderedIds = selectedId && selectedId !== 'nt' && COURSE_ORDER.includes(selectedId)
-    ? [selectedId, ...COURSE_ORDER.filter((id) => id !== selectedId)]
-    : COURSE_ORDER;
-  orderedIds.forEach((id) => {
+  // ---- Courses included ---------------------------------------------------
+  sectionTitle('COURSES INCLUDED IN THE NUTRI-TRAINER COMBO');
+  NT_COMBO.courseIds.forEach((id) => {
     const c = COURSES[id];
     addPageIfNeeded(40);
     doc.setFont('times', 'bold');
     doc.setFontSize(12);
     doc.setTextColor(...INK);
     doc.text(c.name, margin, y);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(...DEEP);
-    doc.text(c.price, pageWidth - margin, y, { align: 'right' });
     y += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...MUTED);
-    doc.text(`${c.dur}  ·  Live online classes + recorded lessons  ·  Free e-book`, margin, y);
-    y += 5;
-    if (id === selectedId) {
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8.5);
-      doc.setTextColor(...DEEP);
-      doc.text('YOUR SELECTED COURSE', margin, y);
-      y += 4.6;
-    }
     bodyLine(c.intro, 9, MUTED);
     y += 1;
     doc.setFont('helvetica', 'bold');
@@ -193,24 +132,6 @@ export function generateCourseBrochurePDF(courseId) {
     doc.line(margin, y, pageWidth - margin, y);
     y += 6;
   });
-
-  // ---- Nutri-Trainer combo ---------------------------------------------
-  addPageIfNeeded(30);
-  doc.setFillColor(...TINT);
-  doc.roundedRect(margin, y, contentWidth, 26, 3, 3, 'F');
-  doc.setFont('times', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(...INK);
-  doc.text('Nutri-Trainer Combo  ·  ₹4,999', margin + 5, y + 8);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...MUTED);
-  const comboText = doc.splitTextToSize(
-    'All courses in one: Personal Trainer, Nutrition, Group Instructor, Injury Rehabilitation and Powerlifting. Steroids Masterclass not included. Free e-books included.',
-    contentWidth - 10,
-  );
-  comboText.forEach((line, i) => doc.text(line, margin + 5, y + 14 + i * 4.6));
-  y += 32;
 
   // ---- Learning journey -------------------------------------------------
   sectionTitle('YOUR LEARNING JOURNEY');
@@ -240,7 +161,7 @@ export function generateCourseBrochurePDF(courseId) {
   bodyLine('Android: ' + CONFIG.APP_PLAY_URL);
   bodyLine('iOS: ' + CONFIG.APP_APPLE_URL);
   y += 2;
-  bodyLine('Free demo class: ' + CONFIG.WHATSAPP + '  ·  ' + CONFIG.PHONE_DISPLAY);
+  bodyLine('WhatsApp for admissions, course fee and free demo class: ' + CONFIG.PHONE_DISPLAY);
   bodyLine('INPTA accreditation (separate from the course fee): ' + CONFIG.INPTA_URL);
 
   // Footers
@@ -252,33 +173,14 @@ export function generateCourseBrochurePDF(courseId) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(...MUTED);
-    const footerLabel = selectedCourse
-      ? `FGIIT Job-Ready Batch  ·  ${selectedCourse.name} brochure`
-      : 'FGIIT Job-Ready Batch  ·  Course brochure';
-    doc.text(footerLabel, margin, pageHeight - 7);
+    doc.text(`FGIIT Job-Ready Batch  ·  ${NT_COMBO.name} brochure`, margin, pageHeight - 7);
     doc.text('Page ' + i + ' of ' + pages, pageWidth - margin, pageHeight - 7, { align: 'right' });
   }
 
   return doc;
 }
 
-/** Builds a filesystem-safe file name from a course title. */
-const brochureFileName = (courseName) => {
-  const safe = String(courseName || '')
-    .replace(/[^a-zA-Z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
-  return `FGIIT_${safe || 'Course'}_Brochure.pdf`;
-};
-
-/**
- * Downloads the brochure PDF in the browser.
- * @param {string} [courseId] - selected course id; used for the file name and to mark the course
- */
-export function downloadCourseBrochurePDF(courseId) {
-  const doc = generateCourseBrochurePDF(courseId);
-  const selected =
-    courseId === 'nt'
-      ? 'Nutri-Trainer Combo'
-      : (COURSES[courseId] && COURSES[courseId].name) || '';
-  doc.save(brochureFileName(selected));
+/** Downloads the Nutri-Trainer Combo brochure PDF in the browser. */
+export function downloadCourseBrochurePDF() {
+  generateCourseBrochurePDF().save('FGIIT_Nutri_Trainer_Combo_Brochure.pdf');
 }

@@ -77,7 +77,7 @@ export default function Footer({ onNavigate }) {
             }}
             className="footer-link"
           >
-            Courses &amp; fees
+            Our course
           </a>
           <a
             href="/assessment"

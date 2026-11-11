@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { smoothScrollTo } from '../utils/scroll';
+import { inquiryLink } from '../data/fgiitData';
 
 const NAV_LINKS = [
-  { key: 'courses', href: '#courses', label: 'Courses' },
+  { key: 'courses', href: '#courses', label: 'Course' },
   { key: 'assessment', href: '/assessment', label: 'Assessment' },
   { key: 'journey', href: '#journey', label: 'Learning Journey' },
   { key: 'app', href: '#app', label: 'Academy App' },
@@ -42,17 +43,6 @@ export default function Header({ onOpenDemo, currentPage = 'home', onNavigate })
       onNavigate('home');
     } else {
       window.location.href = '/';
-    }
-  };
-
-  const handleEnrollClick = (e) => {
-    e.preventDefault();
-    close();
-    if (currentPage !== 'home' && onNavigate) {
-      onNavigate('home', 'courses');
-    } else {
-      window.history.pushState({ page: 'home' }, '', '/#courses');
-      smoothScrollTo('courses');
     }
   };
 
@@ -109,11 +99,13 @@ export default function Header({ onOpenDemo, currentPage = 'home', onNavigate })
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <a
             className="btn btn-lime"
-            href="#courses"
-            onClick={handleEnrollClick}
+            href={inquiryLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={close}
             style={{ minHeight: '44px', padding: '0 18px', whiteSpace: 'nowrap' }}
           >
-            Enroll · ₹2,999
+            Inquiry Now
           </a>
           <button
             type="button"

@@ -10,6 +10,7 @@ import DemoCta from './components/DemoCta';
 import LearnYourWay from './components/LearnYourWay';
 import PracticalClasses from './components/PracticalClasses';
 import Students from './components/Students';
+import Placements from './components/Placements';
 import InptaSection from './components/InptaSection';
 import FAQ from './components/FAQ';
 import BottomCTA from './components/BottomCTA';
@@ -112,8 +113,6 @@ export default function App() {
   }, [currentPage]);
 
   const handleOpenDemo = () => setModalState({ type: 'demo', data: null });
-  const handleOpenCourse = (courseId) => setModalState({ type: 'course', data: courseId });
-  const handleOpenBuy = (courseId) => setModalState({ type: 'buy', data: courseId });
   const handleOpenReport = (reportData) => setModalState({ type: 'report', data: reportData });
   const handleOpenCertificate = () => setModalState({ type: 'certapply', data: null });
   const handleOpenBrochure = () => setModalState({ type: 'brochure', data: null });
@@ -141,13 +140,14 @@ export default function App() {
             <Hero onOpenDemo={handleOpenDemo} onNavigate={navigate} />
             <Accreditation />
             <Pricing onOpenDemo={handleOpenDemo} onNavigate={navigate} />
-            <Courses onOpenCourse={handleOpenCourse} onOpenBuy={handleOpenBuy} />
+            <Courses />
             <Curriculum onOpenBrochure={handleOpenBrochure} />
             <AppSection />
             <DemoCta onOpenDemo={handleOpenDemo} />
             <LearnYourWay />
             <PracticalClasses />
             <Students />
+            <Placements />
             <InptaSection onApplyCertificate={handleOpenCertificate} />
             <FAQ />
             <BottomCTA onOpenDemo={handleOpenDemo} onNavigate={navigate} />

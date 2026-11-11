@@ -13,7 +13,7 @@ export default function Students() {
         <h2>Real Students. Recognized Accreditation.</h2>
         <p className="lead">
           Explore real student success stories from FGIIT courses. Accreditation and certification
-          are issued separately through INPTA and are never bundled into the ₹2,999 course fee.
+          are issued separately through INPTA and are never bundled into the course fee.
         </p>
       </div>
 

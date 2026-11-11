@@ -38,7 +38,7 @@ export default function InptaSection({ onApplyCertificate }) {
           }}
         >
           <b style={{ fontSize: '15px', color: 'var(--ink)' }}>
-            Accreditation and certification are separate from the ₹2,999 course fee.
+            Accreditation and certification are separate from the course fee.
           </b>
           <span style={{ fontSize: '14px', lineHeight: 1.6, color: 'var(--muted)' }}>
             Eligibility, approval and the applicable accreditation fees are as per INPTA. A

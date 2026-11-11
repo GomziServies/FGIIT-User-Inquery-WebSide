@@ -63,7 +63,7 @@ export function generateCoachReportPDF(report, candidate = {}) {
     y + 14
   );
   doc.text(
-    'Head Office: 2, GOMZI Abhushan, Char Rasta, Katargam, Surat, Gujarat 395008 | Phone: +91 88668 42520',
+    'Head Office: 2, GOMZI Abhushan, Char Rasta, Katargam, Surat, Gujarat 395008 | Phone: +91 63540 51487',
     margin + 6,
     y + 19
   );
@@ -303,7 +303,7 @@ export function generateCoachReportPDF(report, candidate = {}) {
   doc.setFontSize(7.5);
   doc.setTextColor(...mutedText);
   doc.text(
-    'Direct WhatsApp Guidance: +91 88668 42520  |  Portal: https://fggroup.in  |  INPTA / IPTNA Registered',
+    'Direct WhatsApp Guidance: +91 63540 51487  |  Portal: https://fggroup.in  |  INPTA / IPTNA Registered',
     margin,
     y + 4
   );

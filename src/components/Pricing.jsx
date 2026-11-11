@@ -1,24 +1,17 @@
 import React from 'react';
-import { INCLUDES, ACCREDITATION_NOTE, CONFIG } from '../data/fgiitData';
+import { INCLUDES, ACCREDITATION_NOTE, CONFIG, inquiryLink } from '../data/fgiitData';
 import Icon from './Icons';
-import { smoothScrollTo } from '../utils/scroll';
 
 export default function Pricing({ onOpenDemo, onNavigate }) {
-  const handleEnrollClick = (e) => {
-    e.preventDefault();
-    window.history.pushState({ page: 'home' }, '', '/#courses');
-    smoothScrollTo('courses');
-  };
-
   return (
     <section id="price" className="wrap section section--flush-bottom">
       <div className="head">
-        <span className="eyebrow">Course fee</span>
-        <h2>Everything You Need to Start Your Fitness Career – Just ₹2,999</h2>
+        <span className="eyebrow">What you get</span>
+        <h2>Everything You Need to Start Your Fitness Career</h2>
         <p className="lead">
-          One fee opens the whole learning experience for the course you choose: live classes with
-          expert faculty, recorded lessons, digital study material and the app that keeps it all in
-          one place.
+          The Nutri-Trainer Combo opens the whole learning experience for all five courses: live
+          classes with expert faculty, recorded lessons, digital study material and the app that
+          keeps it all in one place.
         </p>
       </div>
 
@@ -61,39 +54,17 @@ export default function Pricing({ onOpenDemo, onNavigate }) {
                   color: 'var(--ink)',
                 }}
               >
-                ★ All-Inclusive Access
-              </span>
-              <span
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  color: 'var(--deep)',
-                  background: 'var(--tint2)',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                }}
-              >
-                Save 80%
+                ★ All Courses in One
               </span>
             </div>
 
-            {/* Price display with strikethrough comparison */}
+            {/* Course name */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
-                <span className="price-tag">₹2,999</span>
-                <span
-                  style={{
-                    fontSize: '18px',
-                    color: 'var(--muted)',
-                    textDecoration: 'line-through',
-                    fontWeight: 600,
-                  }}
-                >
-                  ₹14,999
-                </span>
-              </div>
+              <span className="price-tag" style={{ fontSize: 'clamp(28px, 3.4vw, 38px)' }}>
+                Nutri-Trainer Combo
+              </span>
               <span className="price-note">
-                One-time complete fee · No hidden charges · Any 1 course
+                5 courses · 6–8 months · Live + recorded classes
               </span>
             </div>
 
@@ -111,7 +82,7 @@ export default function Pricing({ onOpenDemo, onNavigate }) {
               }}
             >
               {[
-                'Full 6-Month Diploma Online Course',
+                'Personal Trainer, Nutrition, Group Instructor, Rehab & Powerlifting',
                 'Daily Live Interactive Video Classes',
                 'FGIIT Academy App (Lifetime Revision)',
                 'Digital E-Books & Study Material PDF',
@@ -153,11 +124,12 @@ export default function Pricing({ onOpenDemo, onNavigate }) {
             <div className="btn-row" style={{ marginTop: 'auto', gap: '10px' }}>
               <a
                 className="btn btn-lime"
-                href="#courses"
-                onClick={handleEnrollClick}
+                href={inquiryLink()}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{ minHeight: '52px', flex: '1 1 180px' }}
               >
-                Enroll Now – ₹2,999
+                Inquiry Now
               </a>
               <button
                 type="button"
