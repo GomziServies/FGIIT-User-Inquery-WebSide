@@ -2093,3 +2093,23 @@ details p {
     width: 100%;
   }
 }
+
+/* "What you get" cards — two per row; an odd last card sits centred */
+.includes-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 16px;
+}
+
+.includes-grid > * {
+  flex: 0 1 calc(50% - 8px);
+  min-width: 0;
+}
+
+@media (max-width: 560px) {
+  .includes-grid > * {
+    flex-basis: 100%;
+  }
+}

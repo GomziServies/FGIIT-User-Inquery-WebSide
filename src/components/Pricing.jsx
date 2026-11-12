@@ -1,17 +1,29 @@
 import React from 'react';
-import { INCLUDES, ACCREDITATION_NOTE, CONFIG, inquiryLink } from '../data/fgiitData';
+import {
+  INCLUDES,
+  ACCREDITATION_NOTE,
+  CONFIG,
+  COURSES,
+  NT_COMBO,
+  inquiryLink,
+  sendTelemetry,
+} from '../data/fgiitData';
 import Icon from './Icons';
 
 export default function Pricing({ onOpenDemo, onNavigate }) {
   return (
-    <section id="price" className="wrap section section--flush-bottom">
+    <section
+      id="courses"
+      className="wrap section section--flush-bottom"
+      style={{ scrollMarginTop: '80px' }}
+    >
       <div className="head">
         <span className="eyebrow">What you get</span>
         <h2>Everything You Need to Start Your Fitness Career</h2>
         <p className="lead">
           The Nutri-Trainer Combo opens the whole learning experience for all five courses: live
-          classes with expert faculty, recorded lessons, digital study material and the app that
-          keeps it all in one place.
+          classes with expert faculty, recorded lessons, digital study material, the app that
+          keeps it all in one place, and 100% placement support after completion.
         </p>
       </div>
 
@@ -58,17 +70,39 @@ export default function Pricing({ onOpenDemo, onNavigate }) {
               </span>
             </div>
 
-            {/* Course name */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <span className="price-tag" style={{ fontSize: 'clamp(28px, 3.4vw, 38px)' }}>
-                Nutri-Trainer Combo
-              </span>
-              <span className="price-note">
-                5 courses · 6–8 months · Live + recorded classes
-              </span>
+            {/* Course name + intro */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <h3 className="price-tag" style={{ margin: 0, fontSize: 'clamp(28px, 3.4vw, 38px)' }}>
+                {NT_COMBO.name}
+              </h3>
+              <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: 'var(--text2)' }}>
+                {NT_COMBO.intro}
+              </p>
             </div>
 
-            {/* Value Deliverables Checklist */}
+            {/* Quick facts */}
+            <div className="chips" style={{ gap: '8px' }}>
+              {NT_COMBO.facts.map((f) => (
+                <span
+                  key={f}
+                  style={{
+                    fontSize: '12.5px',
+                    padding: '5px 11px',
+                    borderRadius: '999px',
+                    background: '#FFFFFF',
+                    border: '1px solid #DCE8C4',
+                    color: 'var(--text2)',
+                  }}
+                >
+                  {f}
+                </span>
+              ))}
+            </div>
+
+            {/* Courses included */}
+            <b style={{ fontSize: '15px', color: 'var(--ink)', marginBottom: '-8px' }}>
+              Courses included
+            </b>
             <ul
               style={{
                 listStyle: 'none',
@@ -81,13 +115,7 @@ export default function Pricing({ onOpenDemo, onNavigate }) {
                 borderBottom: '1px solid #E1ECE5',
               }}
             >
-              {[
-                'Personal Trainer, Nutrition, Group Instructor, Rehab & Powerlifting',
-                'Daily Live Interactive Video Classes',
-                'FGIIT Academy App (Lifetime Revision)',
-                'Digital E-Books & Study Material PDF',
-                '100% Job Placement Assistance After Certification',
-              ].map((item, idx) => (
+              {NT_COMBO.courseIds.map((k) => COURSES[k].name).map((item, idx) => (
                 <li
                   key={idx}
                   style={{
@@ -121,38 +149,44 @@ export default function Pricing({ onOpenDemo, onNavigate }) {
               ))}
             </ul>
 
-            <div className="btn-row" style={{ marginTop: 'auto', gap: '10px' }}>
-              <a
-                className="btn btn-lime"
-                href={inquiryLink()}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ minHeight: '52px', flex: '1 1 180px' }}
-              >
-                Inquiry Now
-              </a>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={onOpenDemo}
-                style={{ minHeight: '52px' }}
-              >
-                Free Demo
-              </button>
+            <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.55, color: 'var(--muted)' }}>
+              Plus 100% job placement assistance after certification and lifetime revision on the
+              FGIIT Academy app.
+            </p>
+
+            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="btn-row" style={{ gap: '10px' }}>
+                <a
+                  className="btn btn-lime"
+                  href={inquiryLink(NT_COMBO.name)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => sendTelemetry('inquiry_click', { course: NT_COMBO.name })}
+                  style={{ minHeight: '52px', flex: '1 1 180px' }}
+                >
+                  Inquiry Now
+                </a>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={onOpenDemo}
+                  style={{ minHeight: '52px' }}
+                >
+                  Free Demo
+                </button>
+              </div>
+              <span style={{ fontSize: '12.5px', color: 'var(--muted)' }}>
+                Full course · without certificate ·{' '}
+                <a href="#inpta" className="tap-link" style={{ fontWeight: 700 }}>
+                  Need accreditation only?
+                </a>
+              </span>
             </div>
           </div>
         </div>
 
         {/* 4 Pillars of Learning Bento Grid */}
-        <div
-          style={{
-            flex: '1 1 500px',
-            minWidth: 0,
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
-            gap: '16px',
-          }}
-        >
+        <div className="includes-grid" style={{ flex: '1 1 500px', minWidth: 0 }}>
           {INCLUDES.map((item) => (
             <div
               key={item.id}

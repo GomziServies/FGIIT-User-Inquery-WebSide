@@ -3,7 +3,6 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import Accreditation from './components/Accreditation';
 import Pricing from './components/Pricing';
-import Courses from './components/Courses';
 import Curriculum from './components/Curriculum';
 import AppSection from './components/AppSection';
 import DemoCta from './components/DemoCta';
@@ -140,7 +139,6 @@ export default function App() {
             <Hero onOpenDemo={handleOpenDemo} onNavigate={navigate} />
             <Accreditation />
             <Pricing onOpenDemo={handleOpenDemo} onNavigate={navigate} />
-            <Courses />
             <Curriculum onOpenBrochure={handleOpenBrochure} />
             <AppSection />
             <DemoCta onOpenDemo={handleOpenDemo} />

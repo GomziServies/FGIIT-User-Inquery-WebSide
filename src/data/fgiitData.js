@@ -751,16 +751,6 @@ export const NT_COMBO = {
   facts: ['5 courses', '6–8 months', 'Live + pre-recorded', 'Free e-books (PDF)', 'Without certificate'],
 };
 
-/* Pre-generated brochure files served from /images/brochure/ */
-export const BROCHURE_FILES = {
-  pt: 'FGIIT_Diploma_in_Personal_Trainer_Brochure.pdf',
-  dn: 'FGIIT_Diploma_in_Nutrition_Brochure.pdf',
-  aas: 'FGIIT_Anabolic_Androgenic_Steroids_Masterclass_Brochure.pdf',
-  pl: 'FGIIT_Powerlifting_Coach_Masterclass_Brochure.pdf',
-  gi: 'FGIIT_Group_Instructor_Masterclass_Brochure.pdf',
-  ir: 'FGIIT_Injury_Rehabilitation_Masterclass_Brochure.pdf',
-  nt: 'FGIIT_Nutri_Trainer_Combo_Brochure.pdf',
-};
 
 /* What the Nutri-Trainer Combo includes */
 export const INCLUDES = [
