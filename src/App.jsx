@@ -146,8 +146,8 @@ export default function App() {
             <PracticalClasses />
             <Students />
             <Placements />
-            <InptaSection onApplyCertificate={handleOpenCertificate} />
             <FAQ />
+            <InptaSection onApplyCertificate={handleOpenCertificate} />
             <BottomCTA onOpenDemo={handleOpenDemo} onNavigate={navigate} />
           </>
         )}

@@ -942,14 +942,6 @@ export const FAQS = [
     a: 'Yes. Recorded lessons and free e-books (PDF) for all five courses are included, and all of it is available in the FGIIT Academy app along with lecture notes and other study material.',
   },
   {
-    q: 'Is accreditation or certification included in the course fee?',
-    a: 'No. Accreditation and certification are separate from the course fee. Eligible students who wish to obtain accreditation or certification must apply separately through INPTA, subject to its applicable eligibility requirements, approval process and fees.',
-  },
-  {
-    q: 'How can I apply for an INPTA certificate?',
-    a: 'Use the "Apply for Your Certificate" button in the INPTA section. Fill in your details and choose the accreditation you want, and our team will get back to you within 24 hours with the next steps and applicable fees.',
-  },
-  {
     q: 'How can I book a free demo class?',
     a: 'Tap "Join a Free Demo Class" anywhere on the page. You can either ask for a recorded class or pick a live slot from Monday to Saturday, and the class details reach you on WhatsApp.',
   },
